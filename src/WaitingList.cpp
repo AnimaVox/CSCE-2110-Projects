@@ -1,14 +1,14 @@
-#include "CSCE-2110-Projects/include/WaitingList.h" // I don't know how to find .h files when they're in a different folder
-// TODO: Find out how the other classes and objects are handled to find out how to implement waiting list.
-void WaitingList::AddStudent(const Student& students) {
+#include "CSCE-2110-Projects/include/WaitingList.h" // FIXME: Header include doesn't work
 
+void WaitingList::AddStudent(const Student& student) {
+    students.push(student);
 }
 
 void WaitingList::RemoveStudent() {
-
+    students.pop(student);
 }
 
-void WaitingList::DisplayWaiting(const Student& students) const {
+void WaitingList::DisplayWaiting(const Student& student) const {
     while (!students.empty()) {
         cout << students.front() << endl;
         students.pop();
