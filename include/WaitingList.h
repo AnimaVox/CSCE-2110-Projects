@@ -95,9 +95,8 @@ public:
     int Size() const;
 };
 
-// ------------------------------------------------------------------
 // WaitingListManager: one WaitingList per resourceID.
-// ------------------------------------------------------------------
+
 class WaitingListManager {
 private:
     struct Entry {
