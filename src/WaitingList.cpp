@@ -8,7 +8,7 @@ void WaitingList::RemoveStudent() {
     students.pop(student);
 }
 
-void WaitingList::DisplayWaiting(const Student& student) const {
+void WaitingList::DisplayWaiting(const Student student) const {
     while (!students.empty()) {
         cout << students.front() << endl;
         students.pop();
