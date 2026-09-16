@@ -1,15 +1,15 @@
-#include "Resource.h"
-#include <iostream>
-#include <iomanip>
+#include "../include/Resource.h"
+#include <iostream> // cin, cout
+#include <iomanip> // setw
 
-Resource::Resource(){
+Resource::Resource(){ // Defualt constructor (empty)
     id = "";
     name = "";
     type = "";
     status = "";
 }
 
-Resource::Resource(const string& id, const string& name, const string& type, const string& status){
+Resource::Resource(const string& id, const string& name, const string& type, const string& status){ // parameterized constructor
     this->id = id;
     this->name = name;
     this->type = type;
@@ -47,7 +47,7 @@ void Resource::display() const { // Display the resource information in one form
     cout << left
     << setw(8) << id
     << setw(20) << name
-    << setw(18) << type
+    << setw(25) << type
     << setw(12) << status
     << endl;
 }

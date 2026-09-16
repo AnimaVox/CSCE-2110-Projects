@@ -1,3 +1,7 @@
+/*
+This class creates "Resource" objects. Resource objects, have a {id},{name},{type}, and {status}. 
+*/
+
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
