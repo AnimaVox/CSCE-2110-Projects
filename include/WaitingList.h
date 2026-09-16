@@ -12,7 +12,7 @@ public:
 
     void RemoveStudent(); // Removes a student from the front of the queue
 
-    void DisplayWaiting(const Student student) const; // This should create a copy of the original queue so we don't accidentally destroy the actual queue displaying the data
+    void DisplayWaiting(const Student student); // This should create a copy of the original queue so we don't accidentally destroy the actual queue displaying the data
 
 private:
     queue<Student> students; // Queue containing student data
