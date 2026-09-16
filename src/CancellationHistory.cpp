@@ -1,11 +1,13 @@
-#include "../include/CancellationHistory.h" // I still need to figure out how cross-folder includes work
+#include "../include/CancellationHistory.h"
 
 void CancellationHistory::AddHistory(const Reservation& cancelled) {
     history.push(cancelled);
 }
 
-void CancellationHistory::RestoreHistory() {
-    history.pop(); // Need to put something before, how to return the reservation back?
+Reservation CancellationHistory::RestoreHistory() {
+    restore = history.top();
+    history.pop();
+    return restore;
 }
 
 void CancellationHistory::DisplayHistory(const Reservation history) {
