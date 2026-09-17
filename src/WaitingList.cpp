@@ -14,7 +14,7 @@ void WaitingList::DisplayWaiting(const Student student) {
         return;
     }
 
-    while (!students.empty()) {
+    while (!students.empty()) { // Display everything in the list until empty
         cout << students.front() << endl;
         students.pop();
     }

@@ -5,7 +5,7 @@ void CancellationHistory::AddHistory(const Reservation& cancelled) {
 }
 
 Reservation CancellationHistory::RestoreHistory() {
-    restore = history.top();
+    restore = history.top(); // Gives the reservation to restore even as the original gets popped later
     history.pop();
     return restore;
 }
