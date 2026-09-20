@@ -1,22 +1,28 @@
-#include "Reservation.h"
+/*
+- Original Author: Erin Sen
+- Editor: D'Antae Leathers
+*/
+
+#include "../include/Reservation.h" // updated header file path - DL
 #include <iostream>
 #include <iomanip>
  
 Reservation::Reservation(){
     id = "";
+    date = "";
+    
     studentID = "";
     studentName = "";
+    
     resourceID = "";
-    date = "";
 }
  
-Reservation::Reservation(const string& id, const string& studentID, const string& studentName,
-                          const string& resourceID, const string& date){
+Reservation::Reservation(const string& id, const string& date, const Resource& resource, const Student& student){
     this->id = id;
-    this->studentID = studentID;
-    this->studentName = studentName;
-    this->resourceID = resourceID;
     this->date = date;
+    this->studentID = student.getID();
+    this->studentName = student.getName();
+    this->resourceID = resource.getID();
 }
  
 // Getters
@@ -24,23 +30,27 @@ string Reservation::getID() const {
     return id;
 }
  
-string Reservation::getStudentID() const {
-    return studentID;
-}
- 
-string Reservation::getStudentName() const {
-    return studentName;
-}
- 
-string Reservation::getResourceID() const {
-    return resourceID;
-}
- 
 string Reservation::getDate() const {
     return date;
 }
  
+string Reservation::getStudentID() const {
+    return studentID;
+}
+
+string Reservation::getStudentName() const {
+    return studentName;
+}
+
+string Reservation::getResourceID() const {
+    return resourceID;
+}
+
 // Setters
+void Reservation::setID(const string& newID) {
+    id = newID;
+}
+
 void Reservation::setDate(const string& newDate) {
     date = newDate;
 }

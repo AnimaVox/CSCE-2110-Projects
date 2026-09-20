@@ -1,3 +1,7 @@
+/*
+- Original Author: D'Antae Leathers
+*/
+
 #include "../include/ResourceManager.h"
 #include <iostream> // cin, cout, cerr
 #include <iomanip> // setw
@@ -26,7 +30,7 @@ bool ResourceManager::loadFile(const string& filename) {
             continue; // Skip empty lines
         }
 
-        vector<string> parts = splitLine(line, '|'); // Split the line into parts using '|' as the delimiter
+        vector<string> parts = strhlp.splitLine(line, '|'); // Split the line into parts using '|' as the delimiter
 
         if (parts.size() != 4) { // Ensure that there are exactly 4 parts (ID, Name, Type, Status)
             cerr << "Warning: Line " << lineNumber << " in file " << filename << " has incorrect format." << endl;
@@ -70,25 +74,19 @@ void ResourceManager::displayAvailable() const { // Display only Available resou
 }
 
 // --- SEARCH ---
-// Small helper to lowercase a string. This is for case-insensitive comparisons.
-// I put it here as static because I don't intend for it to be used anywhere else in the code. toLower() only works here, and only serves to help search().
-static string toLower(const string& s) {
-    string result = s;
-    transform(result.begin(), result.end(), result.begin(), [](char c){return tolower(c);});
-    return result;
-}
 
 vector<Resource> ResourceManager::search(const string& keyword) const {
     vector<Resource> results; // Vector to store search results
 
     // By converting both the keyword and resource parts to lowercase, search is made case-insensitive
-    string lowerKeyword = toLower(keyword); // Copy of keyword, converted to lowercase
+    string lowerKeyword = strhlp.toLower(keyword); // Copy of keyword, converted to lowercase
 
-    for (const auto& resource : resources) {
-        // Check if the keyword is a substring i.e. is the keyword present?
-        if(toLower(resource.getID()).find(lowerKeyword) != string::npos || // Checking ID
-           toLower(resource.getName()).find(lowerKeyword) != string::npos || // Checking Name
-           toLower(resource.getType()).find(lowerKeyword) != string::npos){ // Checking Type
+    for (const auto& resource : resources) { // Check if the keyword is a substring i.e. is the keyword present?
+        // Using .find() is a form of Linear Search. 
+        // It checks each character in the string until it finds a match or reaches the end of the string.
+        if(strhlp.toLower(resource.getID()).find(lowerKeyword) != string::npos || // Checking ID
+           strhlp.toLower(resource.getName()).find(lowerKeyword) != string::npos || // Checking Name
+           strhlp.toLower(resource.getType()).find(lowerKeyword) != string::npos){ // Checking Type
            // No need to check status, it only matters if it is "Available"
             results.push_back(resource);
         }
@@ -131,18 +129,6 @@ int ResourceManager::count() const { // Simply returns the total number of resou
 }
 
 // --- HELPERS ---
-vector<string> ResourceManager::splitLine(const string& line, char delimiter) { // Just splits the line of text by the delimiter, in this case it should always be "|"
-    vector<string> parts;
-    stringstream ss(line);
-    string part;
-
-    while (getline(ss, part, delimiter)) {
-        parts.push_back(part);
-    }
-
-    return parts;
-}
-
 void ResourceManager::printHeader() { // Makes an neat organized header. To be used when printing other info.
     cout << left
          << setw(8) << "ID"
@@ -151,4 +137,9 @@ void ResourceManager::printHeader() { // Makes an neat organized header. To be u
          << setw(12) << "Status"
          << endl;
     cout << string(65, '-') << endl; // Line of dashes for separation
+}
+
+// Getters
+vector<Resource>& ResourceManager::getResources(){
+    return resources; // Returns a reference to the vector of resources
 }

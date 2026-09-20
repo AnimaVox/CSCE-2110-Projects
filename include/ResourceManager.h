@@ -1,13 +1,14 @@
 /*
 This class manages "Resource" objects. It loads them from a file, stores them in a vector, and facilities sorting and searching through said vector.
 The code assumes the file will have the proper format i.e. "ID|NAME|TYPE|AVAILABILITY". If it doesn't there some validation including to catch that (Check the .cpp).
+- Original Author: D'Antae Leathers
 */
 
 #ifndef RESOURCE_MANAGER_H
 #define RESOURCE_MANAGER_H
 
-//#include
 #include "Resource.h"
+#include "../include/StringHelpers.h" // StringHelpers class for string manipulation
 #include <vector>
 
 using namespace std;
@@ -22,6 +23,13 @@ enum class SortCriteria{ // Using an enum here to avoid arbitrary ints/strings t
 };
 
 class ResourceManager {
+    private:
+        vector<Resource> resources;
+
+        // Helpers
+        static void printHeader(); // Prints the header for resource display
+        StringHelpers strhlp; // Instance of StringHelpers for string manipulation    
+    
     public:
         // LOAD FROM FILE
         // Reads "ID|Name|Type|Status" for each line from text file and stores as Resource objects  
@@ -38,12 +46,8 @@ class ResourceManager {
         void sortResources(SortCriteria criteria); // Sorts the resources based on the specified criteria (ID, Name, Type, or Status)
         int count() const; // Returns the total number of resources
 
-    private:
-        vector<Resource> resources;
-
-        // Helpers
-        static vector<string> splitLine(const string& line, char delimiter); // Splits a line of text into parts by delimiter, then stores in vector
-        static void printHeader(); // Prints the header for resource display
+        // Getters
+        vector<Resource>& getResources(); // Returns a reference to the vector of
 };
 
 #endif

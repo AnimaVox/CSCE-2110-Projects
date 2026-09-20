@@ -1,5 +1,6 @@
 /*
-This class creates "Resource" objects. Resource objects, have a {id},{name},{type}, and {status}. 
+This class creates "Resource" objects. Resource objects, have a {id},{name},{type}, and {status}.
+- Original Author: D'Antae Leathers
 */
 
 #ifndef RESOURCE_H

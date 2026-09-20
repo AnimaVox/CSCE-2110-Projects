@@ -1,3 +1,7 @@
+/*
+- Original Author: D'Antae Leathers
+*/
+
 #include "../include/Resource.h"
 #include <iostream> // cin, cout
 #include <iomanip> // setw
