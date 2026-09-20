@@ -27,7 +27,7 @@ class ReservationManager {
         // CANCEL
         // Removes the reservation with the given ID from the linked list. Returns false if no reservation with that ID exists. 
         // If 'removed' is supplied, it is filled with the cancelled reservation so the caller can push it onto CancellationHistory (the stack).
-        bool cancelReservation(const string& id);
+        bool cancelReservation(const string& id, ResourceManager& rm);
  
         // SEARCH
         // Traverses the linked list and prints every reservation whose ID, student ID, student name, resource ID, or date contains 'keyword'. Returns how many matches were found.

@@ -13,7 +13,6 @@
 
 // --- CREATE ---
 bool ReservationManager::createReservation(string& id, const string& stuID, const string& stuName, const string& resoID, const string& date, ResourceManager& rm) {
-    
     for (auto& resource : rm.getResources()) {
         if (resource.getID() == resoID) { // Check if the resource exists in the ResourceManager
             // Resource exists, proceed
@@ -145,10 +144,27 @@ int ReservationManager::count() const { // Simply returns the total number of re
 }
 
 // CANCEL
-bool ReservationManager::cancelReservation(const string& id) {
+bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm) {
     for (auto it = reservations.begin(); it != reservations.end(); ++it) { // Must use an iterator to use erase() 
         if (it->getID() == id) { // Find the reservation to cancel
+            string resourceToFree = it->getResourceID(); // Get the resource for the reservation
             reservations.erase(it); // Remove the reservation from the list
+            
+            bool reservedByAnother = false; // Check if any other reservations use that resource
+            for(const auto& res: reservations){
+                if (res.getResourceID() == resourceToFree){
+                    reservedByAnother = true;
+                }
+            }
+            
+            for (auto& resource : rm.getResources()){ // Find the resource in the collection and set it to "Available" if there are no other reservations.
+                if(resource.getID() == resourceToFree){
+                    if (!reservedByAnother){
+                        resource.setStatus("Available");
+                    }                   
+                }
+            }
+
             cout << "Reservation with ID " << id << " has been cancelled." << endl;
             return true; // Successfully cancelled the reservation
         }
@@ -160,10 +176,10 @@ bool ReservationManager::cancelReservation(const string& id) {
 // DISPLAY
 void ReservationManager::printHeader() {
     cout << left
-         << setw(10) << "ID"
+         << setw(8) << "ID"
          << setw(10) << "StudentID"
          << setw(20) << "StudentName"
-         << setw(10) << "ResourceID"
+         << setw(12) << "ResourceID"
          << setw(15) << "Date"
          << endl;
         cout << string(65, '-') << endl; // Line of dashes for separation

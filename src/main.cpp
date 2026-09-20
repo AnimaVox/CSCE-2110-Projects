@@ -149,7 +149,7 @@ int main() {
                 clearInput();
                 getline(cin, removeID);
 
-                resvManager.cancelReservation(removeID);
+                resvManager.cancelReservation(removeID, resManager);
                 break;
             }
             case 5: { // View Waiting List
