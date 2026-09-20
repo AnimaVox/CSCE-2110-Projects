@@ -8,11 +8,11 @@ using namespace std;
 
 class CancellationHistory {
 public:
-    void AddHistory(const Reservation& cancelled);
+    void AddHistory(stack<Reservation>& cancelled);
 
     Reservation RestoreHistory();
 
-    void DisplayHistory(const Reservation history); // Should copy a stack so when popped, it shouldn't compromise the original
+    void DisplayHistory(stack<Reservation> history); // Should copy a stack so when popped, it shouldn't compromise the original
 
 private:
     stack<Reservation> history; // Stack containing history of cancelled reservations

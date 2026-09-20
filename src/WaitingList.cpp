@@ -1,14 +1,14 @@
 #include "../include/WaitingList.h"
 
-void WaitingList::AddStudent(const Student& student) {
-    students.push(student);
+void WaitingList::AddStudent(queue<Student>& students) {
+    students.push(students);
 }
 
 void WaitingList::RemoveStudent() {
-    students.pop(student);
+    students.pop(students);
 }
 
-void WaitingList::DisplayWaiting(const Student student) {
+void WaitingList::DisplayWaiting(queue<Student> students) {
     if (students.empty()) { // Check if the waiting list even has anything
         cout << "The waiting list is empty!" << endl;
         return;

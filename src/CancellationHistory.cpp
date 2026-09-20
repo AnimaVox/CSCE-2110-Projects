@@ -1,6 +1,6 @@
 #include "../include/CancellationHistory.h"
 
-void CancellationHistory::AddHistory(const Reservation& cancelled) {
+void CancellationHistory::AddHistory(stack<Reservation>& cancelled) {
     history.push(cancelled);
 }
 
@@ -10,7 +10,7 @@ Reservation CancellationHistory::RestoreHistory() {
     return restore;
 }
 
-void CancellationHistory::DisplayHistory(const Reservation history) {
+void CancellationHistory::DisplayHistory(stack<Reservation> history) {
     if (history.empty()) { // Check if the history even has anything to begin with
         cout << "The cancellation history is empty!" << endl;
         return;
