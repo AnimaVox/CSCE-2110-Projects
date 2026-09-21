@@ -1,4 +1,4 @@
-#include "ReservationManager.h"
+#include "../include/ReservationManager.h"
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -21,11 +21,25 @@ ReservationManager::~ReservationManager(){
     size = 0;
 }
  
+// Two time ranges on the SAME date overlap if one starts before the other
+// ends, in both directions. Times are "HH:MM" 24-hour zero-padded strings,
+// so plain string comparison sorts them chronologically.
+bool ReservationManager::timesOverlap(const string& startA, const string& endA,
+                                       const string& startB, const string& endB) {
+    return startA < endB && startB < endA;
+}
+ 
 // VALIDATE
 bool ReservationManager::ValidateReservation(const string& id, const string& studentID, const string& studentName,
-                                              const string& resourceID, const string& date) const {
-    if (id.empty() || studentID.empty() || studentName.empty() || resourceID.empty() || date.empty()) {
-        return false; 
+                                              const string& resourceID, const string& date,
+                                              const string& startTime, const string& endTime) const {
+    if (id.empty() || studentID.empty() || studentName.empty() ||
+        resourceID.empty() || date.empty() || startTime.empty() || endTime.empty()) {
+        return false; // required field missing
+    }
+ 
+    if (startTime >= endTime) {
+        return false; // start time must be before end time
     }
  
     ReservationNode* current = head;
@@ -33,8 +47,12 @@ bool ReservationManager::ValidateReservation(const string& id, const string& stu
         if (current->data.getID() == id) {
             return false; // reservation ID already in use
         }
-        if (current->data.getResourceID() == resourceID) {
-            return false; // resource already has an active reservation
+        // A resource CAN be reserved multiple times - only reject if this
+        // is the SAME resource, on the SAME date, with an OVERLAPPING time.
+        if (current->data.getResourceID() == resourceID &&
+            current->data.getDate() == date &&
+            timesOverlap(current->data.getStartTime(), current->data.getEndTime(), startTime, endTime)) {
+            return false; // conflicting active reservation
         }
         current = current->next;
     }
@@ -42,14 +60,29 @@ bool ReservationManager::ValidateReservation(const string& id, const string& stu
     return true;
 }
  
+bool ReservationManager::IsResourceAvailable(const string& resourceID, const string& date,
+                                              const string& startTime, const string& endTime) const {
+    ReservationNode* current = head;
+    while (current != nullptr) {
+        if (current->data.getResourceID() == resourceID &&
+            current->data.getDate() == date &&
+            timesOverlap(current->data.getStartTime(), current->data.getEndTime(), startTime, endTime)) {
+            return false; // a conflicting reservation exists
+        }
+        current = current->next;
+    }
+    return true; // no conflicts found
+}
+ 
 // CREATE
 bool ReservationManager::CreateReservation(const string& id, const string& studentID, const string& studentName,
-                                            const string& resourceID, const string& date) {
-    if (!ValidateReservation(id, studentID, studentName, resourceID, date)) {
+                                            const string& resourceID, const string& date,
+                                            const string& startTime, const string& endTime) {
+    if (!ValidateReservation(id, studentID, studentName, resourceID, date, startTime, endTime)) {
         return false;
     }
  
-    Reservation newReservation(id, studentID, studentName, resourceID, date);
+    Reservation newReservation(id, studentID, studentName, resourceID, date, startTime, endTime);
     ReservationNode* newNode = new ReservationNode(newReservation);
  
     if (tail == nullptr) {
@@ -109,6 +142,8 @@ void ReservationManager::printHeader() {
          << setw(20) << "StudentName"
          << setw(12) << "ResourceID"
          << setw(12) << "Date"
+         << setw(8)  << "Start"
+         << setw(8)  << "End"
          << endl;
 }
  
