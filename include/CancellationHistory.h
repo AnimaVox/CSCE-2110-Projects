@@ -1,6 +1,12 @@
+/*
+- Original Author: Dean Foote
+- Editor: D'Antae Leathers
+*/
+
 #ifndef CANCELLATIONHISTORY_H
 #define CANCELLATIONHISTORY_H
 
+#include "Reservation.h"
 #include <stack>
 #include <iostream>
 
@@ -12,7 +18,7 @@ public:
 
     Reservation RestoreHistory();
 
-    void DisplayHistory(const Reservation history); // Should copy a stack so when popped, it shouldn't compromise the original
+    void DisplayHistory(); // Should copy a stack so when popped, it shouldn't compromise the original
 
 private:
     stack<Reservation> history; // Stack containing history of cancelled reservations

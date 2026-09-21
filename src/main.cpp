@@ -15,6 +15,8 @@
 */
 #include "../include/ReservationManager.h"
 #include "../include/ResourceManager.h"
+#include "../include/WaitingList.h"
+#include "../include/CancellationHistory.h"
 #include <iostream> // cin, cout
 using namespace std;
 
@@ -26,6 +28,8 @@ void clearInput() { // Small helper function that clears leftover input (e.g. af
 int main() {
     ResourceManager resManager;
     ReservationManager resvManager;
+    WaitingList waitList;
+    CancellationHistory cancels;
 
     const string filenameRESOURCES = "resources.txt"; // Assume the filename for input is always "resources.txt", otherwise change this code.
     if (!resManager.loadFile(filenameRESOURCES)) {
@@ -36,7 +40,7 @@ int main() {
     }
 
     const string filenameRESERVATIONS = "reservations.txt"; // Assume the filename for input is always "reservations.txt", otherwise change this code.
-    if (!resvManager.loadFile(filenameRESERVATIONS, resManager)) {
+    if (!resvManager.loadFile(filenameRESERVATIONS, resManager, waitList)) {
         cout << "Could not load \"" << filenameRESERVATIONS << "\". Make sure it's in the same folder as the program." << endl;
         return 1;
         // This will exit the program with a value of '1' i.e. anything other than 0 means something went wrong.
@@ -140,7 +144,7 @@ int main() {
                 getline(cin, date);
 
                 id = ""; // The ID will be generated automatically.
-                resvManager.createReservation(id, studentID, studentName, resourceID, date, resManager);
+                resvManager.createReservation(id, studentID, studentName, resourceID, date, resManager, waitList);
                 break;
             }
             case 4: { // Cancel a Reservation
@@ -148,16 +152,23 @@ int main() {
                 cout << "Enter the Reservation ID to cancel: ";
                 clearInput();
                 getline(cin, removeID);
-
-                resvManager.cancelReservation(removeID, resManager);
+                resvManager.cancelReservation(removeID, resManager, cancels);
                 break;
             }
             case 5: { // View Waiting List
-                cout << "Feature not implemented yet.\n";
+                cout << "\n-- Waiting List --\n"; 
+                waitList.DisplayWaiting();
                 break;
             }
             case 6: { // Undo Cancellation
-                cout << "Feature not implemented yet.\n";
+                Reservation retrievedReservation = cancels.RestoreHistory();
+                string restoreID = retrievedReservation.getID();
+                string restoreStuID = retrievedReservation.getStudentID();
+                string restoreStuName = retrievedReservation.getStudentName();
+                string restoreResoID = retrievedReservation.getResourceID();
+                string restoreDate = retrievedReservation.getDate();
+
+                resvManager.createReservation(restoreID, restoreStuID, restoreStuName, restoreResoID, restoreDate, resManager, waitList);
                 break;
             }
             case 7: { // Search Reservations

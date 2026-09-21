@@ -1,6 +1,12 @@
+/*
+- Original Author: Dean Foote
+- Editor: D'Antae Leathers
+*/
+
 #ifndef WAITINGLIST_H
 #define WAITINGLIST_H
 
+#include "Student.h"
 #include <queue>
 #include <iostream>
 
@@ -12,10 +18,10 @@ public:
 
     void RemoveStudent(); // Removes a student from the front of the queue
 
-    void DisplayWaiting(const Student student); // This should create a copy of the original queue so we don't accidentally destroy the actual queue displaying the data
+    void DisplayWaiting(); // This should create a copy of the original queue so we don't accidentally destroy the actual queue displaying the data
 
 private:
-    queue<Student> students; // Queue containing student data
+    queue<Student> waitingStudents; // Queue containing student data
 };
 
 #endif

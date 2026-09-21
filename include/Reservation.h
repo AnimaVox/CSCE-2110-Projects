@@ -22,8 +22,6 @@ class Reservation {
 
         string resourceID;     // e.g. "R101"
 
-        Resource r; // Resource object associated with the reservation
-
     public:
         Reservation(); // Default Constructor
         Reservation(const string& id, const string& date, const Resource& resource, const Student& student); 

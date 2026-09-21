@@ -12,7 +12,7 @@
 #include <vector> // vector (used to store parts of a line)
 
 // --- CREATE ---
-bool ReservationManager::createReservation(string& id, const string& stuID, const string& stuName, const string& resoID, const string& date, ResourceManager& rm) {
+bool ReservationManager::createReservation(string& id, const string& stuID, const string& stuName, const string& resoID, const string& date, ResourceManager& rm, WaitingList& wl) {
     for (auto& resource : rm.getResources()) {
         if (resource.getID() == resoID) { // Check if the resource exists in the ResourceManager
             // Resource exists, proceed
@@ -36,7 +36,7 @@ bool ReservationManager::createReservation(string& id, const string& stuID, cons
 
             // Create a new reservation with the provided ID
             Reservation newReservation(id, date, resource, Student(stuID, stuName));
-            if (!ValidateReservation(newReservation)) {
+            if (!ValidateReservation(newReservation, wl)) {
                 cout << "Reservation validation failed." << endl;
                 return false; // Validation failed
             }
@@ -51,7 +51,7 @@ bool ReservationManager::createReservation(string& id, const string& stuID, cons
     return false; // Resource does not exist
 }
 
-bool ReservationManager::loadFile(const string& filename, ResourceManager& rm) { // Copied directly from ResourceManager.cpp; modified to work with Reservation objects. -DL
+bool ReservationManager::loadFile(const string& filename, ResourceManager& rm, WaitingList& wl) { // Copied directly from ResourceManager.cpp; modified to work with Reservation objects. -DL
     ifstream file(filename);
     if (!file.is_open()) {
         cerr << "Error: Could not open file " << filename << endl; // Using cerr for error messages. Writes immediately for debugging
@@ -84,7 +84,7 @@ bool ReservationManager::loadFile(const string& filename, ResourceManager& rm) {
         string resoID = parts[3];
         string date = parts[4];
 
-        createReservation(id, stuID, stuName, resoID, date, rm); // Create a new reservation with the parsed data
+        createReservation(id, stuID, stuName, resoID, date, rm, wl); // Create a new reservation with the parsed data
     }
 
     file.close();
@@ -92,7 +92,7 @@ bool ReservationManager::loadFile(const string& filename, ResourceManager& rm) {
 }
 
 // VALIDATE
-bool ReservationManager::ValidateReservation(const Reservation& resv) const {
+bool ReservationManager::ValidateReservation(const Reservation& resv, WaitingList& wl) const {
     const string& studentID = resv.getStudentID();
     const string& studentName = resv.getStudentName();
     const string& resourceID = resv.getResourceID();
@@ -132,6 +132,8 @@ bool ReservationManager::ValidateReservation(const Reservation& resv) const {
     for (const auto& res : reservations) {
         if (res.getResourceID() == resourceID && res.getDate() == date) {
             cout << "Error: Resource already has an active reservation for the given date." << endl;
+            cout << "Added " << studentID << "|" << studentName << " to the queue for Resource: " << resourceID << endl;
+            wl.AddStudent(Student(studentID, studentName));
             return false;
         }
     }
@@ -144,9 +146,10 @@ int ReservationManager::count() const { // Simply returns the total number of re
 }
 
 // CANCEL
-bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm) {
+bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm, CancellationHistory& ch) {
     for (auto it = reservations.begin(); it != reservations.end(); ++it) { // Must use an iterator to use erase() 
         if (it->getID() == id) { // Find the reservation to cancel
+            ch.AddHistory(*it);
             string resourceToFree = it->getResourceID(); // Get the resource for the reservation
             reservations.erase(it); // Remove the reservation from the list
             

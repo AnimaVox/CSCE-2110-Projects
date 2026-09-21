@@ -8,7 +8,7 @@ The code assumes the file will have the proper format i.e. "ID|NAME|TYPE|AVAILAB
 #define RESOURCE_MANAGER_H
 
 #include "Resource.h"
-#include "../include/StringHelpers.h" // StringHelpers class for string manipulation
+#include "StringHelpers.h" // StringHelpers class for string manipulation
 #include <vector>
 
 using namespace std;
