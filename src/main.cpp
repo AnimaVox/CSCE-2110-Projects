@@ -152,7 +152,7 @@ int main() {
                 cout << "Enter the Reservation ID to cancel: ";
                 clearInput();
                 getline(cin, removeID);
-                resvManager.cancelReservation(removeID, resManager, cancels);
+                resvManager.cancelReservation(removeID, resManager, cancels, waitList);
                 break;
             }
             case 5: { // View Waiting List

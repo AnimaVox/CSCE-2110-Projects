@@ -37,8 +37,8 @@ void CancellationHistory::DisplayHistory() {
     stack<Reservation>  copyStack = history; // Create copy of the stack
 
     while (!copyStack.empty()) { // Display everything in the stack until empty
-        history.top().display();
-        history.pop();
+        copyStack.top().display();
+        copyStack.pop();
     }
     cout << endl;
 }

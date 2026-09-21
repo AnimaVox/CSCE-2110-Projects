@@ -131,9 +131,9 @@ bool ReservationManager::ValidateReservation(const Reservation& resv, WaitingLis
     // Check that the resource ID isn't already reserved for the given date -DL
     for (const auto& res : reservations) {
         if (res.getResourceID() == resourceID && res.getDate() == date) {
-            cout << "Error: Resource already has an active reservation for the given date." << endl;
-            cout << "Added " << studentID << "|" << studentName << " to the queue for Resource: " << resourceID << endl;
-            wl.AddStudent(Student(studentID, studentName));
+            cout << "Resource already has an active reservation for the given date." << endl;
+            cout << "Adding " << studentID << "|" << studentName << " to the queue for Resource: " << resourceID << endl;
+            wl.AddStudent(Student(studentID, studentName), resourceID);
             return false;
         }
     }
@@ -146,11 +146,12 @@ int ReservationManager::count() const { // Simply returns the total number of re
 }
 
 // CANCEL
-bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm, CancellationHistory& ch) {
+bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm, CancellationHistory& ch, WaitingList& wl) {
     for (auto it = reservations.begin(); it != reservations.end(); ++it) { // Must use an iterator to use erase() 
         if (it->getID() == id) { // Find the reservation to cancel
             ch.AddHistory(*it);
             string resourceToFree = it->getResourceID(); // Get the resource for the reservation
+            string dateToFree = it->getDate();
             reservations.erase(it); // Remove the reservation from the list
             
             bool reservedByAnother = false; // Check if any other reservations use that resource
@@ -163,7 +164,14 @@ bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm
             for (auto& resource : rm.getResources()){ // Find the resource in the collection and set it to "Available" if there are no other reservations.
                 if(resource.getID() == resourceToFree){
                     if (!reservedByAnother){
-                        resource.setStatus("Available");
+                        Student nextInLine;
+                        if (wl.checkWaiting(resourceToFree, nextInLine)) {
+                            string newID = ""; // let createReservation auto-generate it
+                            createReservation(newID, nextInLine.getID(), nextInLine.getName(), resourceToFree, dateToFree, rm, wl);
+                        }
+                        else{
+                            resource.setStatus("Available");
+                        }
                     }                   
                 }
             }
