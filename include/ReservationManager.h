@@ -4,6 +4,7 @@
 #include "Reservation.h"
 using namespace std;
  
+// RESERVATION_MANAGER - Handles reservation operations
 class ReservationManager {
     public:
         ReservationManager();
@@ -15,23 +16,21 @@ class ReservationManager {
         ReservationManager& operator=(const ReservationManager& other) = delete;
  
         // CREATE
-        // Validates the fields (including a resource/date/time conflict
-        // check), then inserts the new reservation at the end of the
-        // linked list. Returns false if validation fails.
+        // Validates the fields
         bool CreateReservation(const string& id, const string& studentID, const string& studentName,
                                 const string& resourceID, const string& date,
                                 const string& startTime, const string& endTime);
  
         // CANCEL
-        // Removes the reservation with the given ID from the linked list
+        // Removes the reservation with the given ID from the linked list.
         bool CancelReservation(const string& id);
         bool CancelReservation(const string& id, Reservation& removed);
  
         // SEARCH
-        // Traverses the linked list and prints every reservation whose ID
+        // Traverses the linked list and prints every reservation 
         int SearchReservation(const string& keyword) const;
  
-        // Exact-match lookup by reservation ID, no printing
+        // Exact-match lookup by reservation ID, no printing.
         bool FindByID(const string& id, Reservation& found) const;
  
         // DISPLAY
