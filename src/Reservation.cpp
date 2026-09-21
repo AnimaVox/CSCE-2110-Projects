@@ -1,4 +1,4 @@
-#include "Reservation.h"
+#include "../include/Reservation.h"
 #include <iostream>
 #include <iomanip>
  
@@ -8,15 +8,20 @@ Reservation::Reservation(){
     studentName = "";
     resourceID = "";
     date = "";
+    startTime = "";
+    endTime = "";
 }
  
 Reservation::Reservation(const string& id, const string& studentID, const string& studentName,
-                          const string& resourceID, const string& date){
+                          const string& resourceID, const string& date,
+                          const string& startTime, const string& endTime){
     this->id = id;
     this->studentID = studentID;
     this->studentName = studentName;
     this->resourceID = resourceID;
     this->date = date;
+    this->startTime = startTime;
+    this->endTime = endTime;
 }
  
 // Getters
@@ -40,9 +45,25 @@ string Reservation::getDate() const {
     return date;
 }
  
+string Reservation::getStartTime() const {
+    return startTime;
+}
+ 
+string Reservation::getEndTime() const {
+    return endTime;
+}
+ 
 // Setters
 void Reservation::setDate(const string& newDate) {
     date = newDate;
+}
+ 
+void Reservation::setStartTime(const string& newStartTime) {
+    startTime = newStartTime;
+}
+ 
+void Reservation::setEndTime(const string& newEndTime) {
+    endTime = newEndTime;
 }
  
 // Helpers
@@ -53,5 +74,7 @@ void Reservation::display() const { // Display the reservation information in on
          << setw(20) << studentName
          << setw(12) << resourceID
          << setw(12) << date
+         << setw(8)  << startTime
+         << setw(8)  << endTime
          << endl;
 }
