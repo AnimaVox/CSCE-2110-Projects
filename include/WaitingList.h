@@ -24,7 +24,7 @@ public:
 
     void RemoveStudent(); // Removes a student from the front of the queue
 
-    void DisplayWaiting(); // This should create a copy of the original queue so we don't accidentally destroy the actual queue displaying the data
+    void DisplayWaiting() const; // This should create a copy of the original queue so we don't accidentally destroy the actual queue displaying the data
 
     bool checkWaiting(const string& resoID, Student& result);
 

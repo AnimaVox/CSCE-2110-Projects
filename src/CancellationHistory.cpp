@@ -10,6 +10,9 @@ void CancellationHistory::AddHistory(const Reservation& cancelled) {
 }
 
 Reservation CancellationHistory::RestoreHistory() {
+    
+    Reservation restore; // Used to store and return the reservation being restored before removing it from the history
+
     if (history.empty()) { // Check if the history even has anything to begin with
         cout << "The cancellation history is empty!" << endl;
         Reservation empty;
@@ -28,7 +31,7 @@ Reservation CancellationHistory::RestoreHistory() {
     return restore;
 }
 
-void CancellationHistory::DisplayHistory() {
+void CancellationHistory::DisplayHistory() const {
     if (history.empty()) { // Check if the history even has anything to begin with
         cout << "The cancellation history is empty!" << endl;
         return;

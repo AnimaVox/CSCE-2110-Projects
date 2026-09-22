@@ -16,7 +16,7 @@ void WaitingList::RemoveStudent() { // Removes student at front of queue
     waitingStudents.pop();
 }
 
-void WaitingList::DisplayWaiting() {
+void WaitingList::DisplayWaiting() const{
     if (waitingStudents.empty()) { // Check if the waiting list even has anything
         cout << "The waiting list is empty!" << endl;
         return;
@@ -25,7 +25,7 @@ void WaitingList::DisplayWaiting() {
     queue<Request>  copyQueue = waitingStudents; // Create copy of the queue
 
     while (!copyQueue.empty()) { // Display everything in the queue until empty
-        cout << copyQueue.front().stu.getID() << " " << copyQueue.front().stu.getName() << copyQueue.front().resoID << endl;
+        cout << copyQueue.front().stu.getID() << " " << copyQueue.front().stu.getName() << " " << copyQueue.front().resoID << endl;
         copyQueue.pop();
     }
     cout << endl;

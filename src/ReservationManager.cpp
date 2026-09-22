@@ -19,18 +19,32 @@ bool ReservationManager::createReservation(string& id, const string& stuID, cons
            
             // If no reservation ID was provided, generate a new reservation ID based on the reservations in the list.
             if (id.empty()) {
-                // Get the last reservation's ID using reservations.back().getID().
-                id = (reservations.back().getID());
-        
-                for (const auto& res : reservations) { // Check if the next ID is already in use
-                    // Convert the ID to an integer using stoi(), increment it by 1, and convert it back to a string.
-                    if (to_string(stoi(reservations.back().getID()) + 1) != res.getID()) { // If the next ID is not already in use, use it
-                        id = to_string(stoi(reservations.back().getID()) + 1);
-                        // Converting to int drops leading zeros, so pad the ID with leading zeros to ensure it is always 3 digits long
-                        for (int i = id.length(); i < 3; ++i) { 
+                    // Check to see if there are any reservations.
+                    if (!reservations.empty()){
+                        int maxID = 0;
+                        for (const auto& res: reservations){ maxID = max(maxID, stoi(res.getID())); } // This finds the highest resevation ID and sets it to maxID. 
+                        id = to_string(maxID + 1); // Then just make the new reservation ID 1 after the highest.
+                        for (int i = id.length(); i < 3; ++i) { // pad the ID with leading zeros to ensure it is always 3 digits long
                             id = "0" + id;
                         }
+
+                        // OLD WAY OF GENERATIING A NEW RESERVATION ID -> Get the last reservation's ID using reservations.back().getID(). 
+                        // If there were no reservations, then this way of generating an ID may crash the program.
+
+                        /*id = (reservations.back().getID()); 
+                        for (const auto& res : reservations) { // Check if the next ID is already in use
+                        // Convert the ID to an integer using stoi(), increment it by 1, and convert it back to a string.
+                            if (to_string(stoi(reservations.back().getID()) + 1) != res.getID()) { // If the next ID is not already in use, use it
+                                id = to_string(stoi(reservations.back().getID()) + 1);
+                                // Converting to int drops leading zeros, so pad the ID with leading zeros to ensure it is always 3 digits long
+                                for (int i = id.length(); i < 3; ++i) { 
+                                    id = "0" + id;
+                                }
+                            }
+                        }*/
                     }
+                else{ // If reservation ID is not provided and there are no reservatons made, then this will be the first reservation. Thus, give it the 001 ID.
+                    id = "001";
                 }
             }
 
@@ -115,10 +129,10 @@ bool ReservationManager::ValidateReservation(const Reservation& resv, WaitingLis
         if (date.length() != 10 || date[2] != '/' || date[5] != '/') {
             cout << "Error: Date must be in the format MM/DD/YYYY." << endl;
             return false;
-        } else if (date[0] > '1' || (date[0] == '1' && date[1] > '2')) {
+        } else if (date[0] > '1' || (date[0] == '1' && date[1] > '2') || (date[0] == '0' && date[1] == '0')) {
             cout << "Error: Invalid month." << endl;
             return false;
-        } else if (date[3] > '3' || (date[3] == '3' && (date[4] != '0' || date[4] != '1'))) { // Does not account for months with fewer than 30 days. -DL
+        } else if (date[3] > '3' || (date[3] == '3' && date[4] != '0' && date[4] != '1')) { // Does not account for months with fewer than 30 days. -DL
             cout << "Error: Invalid day." << endl;
             return false;
         }
@@ -188,7 +202,7 @@ bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm
 void ReservationManager::printHeader() {
     cout << left
          << setw(8) << "ID"
-         << setw(10) << "StudentID"
+         << setw(12) << "StudentID"
          << setw(20) << "StudentName"
          << setw(12) << "ResourceID"
          << setw(15) << "Date"

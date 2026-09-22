@@ -18,11 +18,10 @@ public:
 
     Reservation RestoreHistory();
 
-    void DisplayHistory(); // Should copy a stack so when popped, it shouldn't compromise the original
+    void DisplayHistory() const; // Should copy a stack so when popped, it shouldn't compromise the original
 
 private:
     stack<Reservation> history; // Stack containing history of cancelled reservations
-    Reservation restore; // Used to store and return the reservation being restored before removing it from the history
 };
 
 #endif
