@@ -31,7 +31,7 @@ int main() {
     WaitingList waitList;
     CancellationHistory cancels;
 
-    const string filenameRESOURCES = "resources.txt"; // Assume the filename for input is always "resources.txt", otherwise change this code.
+    const string filenameRESOURCES = "data/resources.txt"; // Assume the filename for input is always "resources.txt", otherwise change this code.
     if (!resManager.loadFile(filenameRESOURCES)) {
         cout << "Could not load \"" << filenameRESOURCES << "\". Make sure it's in the same folder as the program." << endl;
         return 1; 
@@ -39,7 +39,7 @@ int main() {
         // Can change this later so that the program just runs with no resources loaded if the file fails to load.
     }
 
-    const string filenameRESERVATIONS = "reservations.txt"; // Assume the filename for input is always "reservations.txt", otherwise change this code.
+    const string filenameRESERVATIONS = "data/reservations.txt"; // Assume the filename for input is always "reservations.txt", otherwise change this code.
     if (!resvManager.loadFile(filenameRESERVATIONS, resManager, waitList)) {
         cout << "Could not load \"" << filenameRESERVATIONS << "\". Make sure it's in the same folder as the program." << endl;
         return 1;
