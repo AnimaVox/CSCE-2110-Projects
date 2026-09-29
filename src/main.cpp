@@ -31,15 +31,15 @@ int main() {
     WaitingList waitList;
     CancellationHistory cancels;
 
-    const string filenameRESOURCES = "resources.txt"; // Assume the filename for input is always "resources.txt", otherwise change this code.
+    const string filenameRESOURCES = "data/resources.txt"; // Assume the filename for input is always "resources.txt", otherwise change this code.
     if (!resManager.loadFile(filenameRESOURCES)) {
         cout << "Could not load \"" << filenameRESOURCES << "\". Make sure it's in the same folder as the program." << endl;
-        return 1; 
+        return 1;
         // This will exit the program with a value of '1' i.e. anything other than 0 means something went wrong.
         // Can change this later so that the program just runs with no resources loaded if the file fails to load.
     }
 
-    const string filenameRESERVATIONS = "reservations.txt"; // Assume the filename for input is always "reservations.txt", otherwise change this code.
+    const string filenameRESERVATIONS = "data/reservations.txt"; // Assume the filename for input is always "reservations.txt", otherwise change this code.
     if (!resvManager.loadFile(filenameRESERVATIONS, resManager, waitList)) {
         cout << "Could not load \"" << filenameRESERVATIONS << "\". Make sure it's in the same folder as the program." << endl;
         return 1;
@@ -90,17 +90,17 @@ int main() {
 
                 switch (subchoice) {
                     case 1: { // Display All resources
-                        cout << "\n-- All Resources --\n"; 
+                        cout << "\n-- All Resources --\n";
                         resManager.displayAll();
                         break;
                     }
                     case 2: { // Display Availabe resources
-                        cout << "\n-- Available Resources --\n"; 
+                        cout << "\n-- Available Resources --\n";
                         resManager.displayAvailable();
                         break;
                     }
                     case 3: { // Search by term
-                        cout << "Enter a search term (matches ID, name, or type): "; 
+                        cout << "Enter a search term (matches ID, name, or type): ";
                         string keyword;
                         clearInput();
                         getline(cin, keyword);
@@ -126,7 +126,7 @@ int main() {
                 break;
             }
             case 2: { // View All Reservations
-                cout << "\n-- All Reservations --\n"; 
+                cout << "\n-- All Reservations --\n";
                 resvManager.DisplayReservations();
                 break;
             }
@@ -156,7 +156,7 @@ int main() {
                 break;
             }
             case 5: { // View Waiting List
-                cout << "\n-- Waiting List --\n"; 
+                cout << "\n-- Waiting List --\n";
                 waitList.DisplayWaiting();
                 break;
             }
@@ -176,7 +176,7 @@ int main() {
                 break;
             }
             case 8: { // Sort resources. THIS IS A DIRECT OPERATION on the vector. YOU CANNOT UNSORT
-                cout << "Sort by: 1) ID  2) Name  3) Type  4) Status\n" 
+                cout << "Sort by: 1) ID  2) Name  3) Type  4) Status\n"
                      << "Choice: ";
                     int sortChoice;
                     if (!(cin >> sortChoice)) {
@@ -203,7 +203,7 @@ int main() {
                 break;
             }
             case 0: { // Exit message
-                cout << "Thank you for using the Campus Resource Reservation System. Goodbye!\n";   
+                cout << "Thank you for using the Campus Resource Reservation System. Goodbye!\n";
                 break;
             }
             default:

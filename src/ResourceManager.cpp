@@ -98,25 +98,25 @@ vector<Resource> ResourceManager::search(const string& keyword) const {
 void ResourceManager::sortResources(SortCriteria criteria) {
     switch (criteria) { // Switch case employing the use of the enum
         case SortCriteria::ID:
-            sort(resources.begin(), resources.end(),
+            mergeSort(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getID() < b.getID(); // Sort by ID
                       });
             break;
         case SortCriteria::NAME:
-            sort(resources.begin(), resources.end(),
+            mergeSort(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getName() < b.getName(); // Sort by Name
                       });
             break;
         case SortCriteria::TYPE:
-            sort(resources.begin(), resources.end(),
+            mergeSort(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getType() < b.getType(); // Sort by Type
                       });
             break;
         case SortCriteria::STATUS:
-            sort(resources.begin(), resources.end(),
+            mergeSort(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getStatus() < b.getStatus(); // Sort by status (Availability)
                       });
