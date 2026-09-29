@@ -139,9 +139,9 @@ void ResourceManager::merge(vector<Resource>& vec, int left, int mid, int right,
     }
 
     int i = 0, j = 0, k = left;
-
+    // Because these aren't something simple like ints, we use the comparator here instead
     while (i < n1 && j < n2) { // Merge the temp vectors back
-        if (compare(leftVec[i], rightVec[j])) { // Because these aren't something simple like ints, we use the comparator here instead
+        if (!compare(rightVec[j], leftVec[i])) { // We compare right to left because it would've taken the right object first on equality, which is unstable.
             vec[k] = leftVec[i];
             i++;
         } else {
@@ -156,8 +156,8 @@ void ResourceManager::merge(vector<Resource>& vec, int left, int mid, int right,
         k++;
     }
 
-    while (i < n2) {
-        vec[k] = rightVec[i];
+    while (j < n2) {
+        vec[k] = rightVec[j];
         j++;
         k++;
     }
