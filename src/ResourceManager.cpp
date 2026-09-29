@@ -124,10 +124,9 @@ void ResourceManager::sortResources(SortCriteria criteria) {
     }
 }
 
-template <typename Compare> // For the comparator to work using lambda functions
 // Since we're not comparing simple numbers but member data, we use the comparator to use a lambda function
 // to determine what at runtime we are comparing (Type, Status, Name, ID)
-void ResourceManager::merge(vector<Resource>& vec, int left, int mid, int right, Compare compare) {
+void ResourceManager::merge(vector<Resource>& vec, int left, int mid, int right, function<bool(const Resource&, const Resource&)> compare) {
     int n1 = mid - left + 1;
     int n2 = right - mid;
     vector<Resource> leftVec(n1), rightVec(n2);
@@ -164,8 +163,7 @@ void ResourceManager::merge(vector<Resource>& vec, int left, int mid, int right,
     }
 }
 
-template <typename Compare>
-void ResourceManager::mergeSort(vector<Resource>& vec, int left, int right, Compare compare) {
+void ResourceManager::mergeSort(vector<Resource>& vec, int left, int right, function<bool(const Resource&, const Resource&)> compare) {
     if (left >= right) return;
 
     int mid = left + (right - left) / 2;

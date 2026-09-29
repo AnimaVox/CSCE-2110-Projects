@@ -10,6 +10,7 @@ The code assumes the file will have the proper format i.e. "ID|NAME|TYPE|AVAILAB
 #include "Resource.h"
 #include "StringHelpers.h" // StringHelpers class for string manipulation
 #include <vector>
+#include <functional>
 
 using namespace std;
 
@@ -44,10 +45,8 @@ class ResourceManager {
 
         // SORT
         void sortResources(SortCriteria criteria); // Sorts the resources based on the specified criteria (ID, Name, Type, or Status)
-        template <typename Compare> // For the comparator to work using lambda functions
-        void merge(vector<Resource>& vec, int left, int mid, int right, Compare compare);
-        template <typename Compare> // I have to type this twice apparently, might make a neater version later
-        void mergeSort(vector<Resource>& vec, int left, int right, Compare compare);
+        void merge(vector<Resource>& vec, int left, int mid, int right, function<bool(const Resource&, const Resource&)> compare);
+        void mergeSort(vector<Resource>& vec, int left, int right, function<bool(const Resource&, const Resource&)> compare);
         int count() const; // Returns the total number of resources
 
         // Getters
