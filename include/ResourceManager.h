@@ -13,7 +13,7 @@ The code assumes the file will have the proper format i.e. "ID|NAME|TYPE|AVAILAB
 
 using namespace std;
 
-enum class SortCriteria{ // Using an enum here to avoid arbitrary ints/strings to pass to sorting functions. 
+enum class SortCriteria{ // Using an enum here to avoid arbitrary ints/strings to pass to sorting functions.
     // The user will see a list of options which will be mapped to these enum values.
     ID,
     NAME,
@@ -28,11 +28,11 @@ class ResourceManager {
 
         // Helpers
         static void printHeader(); // Prints the header for resource display
-        StringHelpers strhlp; // Instance of StringHelpers for string manipulation    
-    
+        StringHelpers strhlp; // Instance of StringHelpers for string manipulation
+
     public:
         // LOAD FROM FILE
-        // Reads "ID|Name|Type|Status" for each line from text file and stores as Resource objects  
+        // Reads "ID|Name|Type|Status" for each line from text file and stores as Resource objects
         bool loadFile(const string& filename); // Example input: R101|Study Room 101|Study Room|Available
 
         // DISPLAY
@@ -41,9 +41,13 @@ class ResourceManager {
 
         // SEARCH
         vector<Resource> search(const string& keyword) const; // Sub-string search for resources, case-insensitive
-        
+
         // SORT
         void sortResources(SortCriteria criteria); // Sorts the resources based on the specified criteria (ID, Name, Type, or Status)
+        template <typename Compare> // For the comparator to work using lambda functions
+        void merge(vector<Resource>& vec, int left, int mid, int right, Compare compare);
+        template <typename Compare> // I have to type this twice apparently, might make a neater version later
+        void mergeSort(vector<Resource>& vec, int left, int right, Compare compare);
         int count() const; // Returns the total number of resources
 
         // Getters

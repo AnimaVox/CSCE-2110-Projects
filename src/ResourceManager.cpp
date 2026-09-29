@@ -82,7 +82,7 @@ vector<Resource> ResourceManager::search(const string& keyword) const {
     string lowerKeyword = strhlp.toLower(keyword); // Copy of keyword, converted to lowercase
 
     for (const auto& resource : resources) { // Check if the keyword is a substring i.e. is the keyword present?
-        // Using .find() is a form of Linear Search. 
+        // Using .find() is a form of Linear Search.
         // It checks each character in the string until it finds a match or reaches the end of the string.
         if(strhlp.toLower(resource.getID()).find(lowerKeyword) != string::npos || // Checking ID
            strhlp.toLower(resource.getName()).find(lowerKeyword) != string::npos || // Checking Name
@@ -94,7 +94,7 @@ vector<Resource> ResourceManager::search(const string& keyword) const {
     return results; // Return the vector of matching resources
 }
 
-// --- SORT ---
+// --- SORT --- // Old sort made by D'Antae, unfortunately not satisfying the requirements for a more generic sort (Heap, Quick, Merge, etc.)
 void ResourceManager::sortResources(SortCriteria criteria) {
     switch (criteria) { // Switch case employing the use of the enum
         case SortCriteria::ID:
@@ -122,6 +122,57 @@ void ResourceManager::sortResources(SortCriteria criteria) {
                       });
             break;
     }
+}
+
+template <typename Compare> // For the comparator to work using lambda functions
+// Since we're not comparing simple numbers but member data, we use the comparator to use a lambda function
+// to determine what at runtime we are comparing (Type, Status, Name, ID)
+void ResourceManager::merge(vector<Resource>& vec, int left, int mid, int right, Compare compare) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+    vector<Resource> leftVec(n1), rightVec(n2);
+
+    for (int i = 0; i < n1; i++) { // Copying the data into temporary vectors
+        leftVec[i] = vec[left + i];
+    }
+    for (int j = 0; j < n2; j++) {
+        rightVec[j] = vec[mid + 1 + j];
+    }
+
+    int i = 0, j = 0, k = left;
+
+    while (i < n1 && j < n2) { // Merge the temp vectors back
+        if (compare(leftVec[i], rightVec[j])) { // Because these aren't something simple like ints, we use the comparator here instead
+            vec[k] = leftVec[i];
+            i++;
+        } else {
+            vec[k] = rightVec[j];
+            j++;
+        }
+        k++;
+    }
+    while (i < n1) {
+        vec[k] = leftVec[i];
+        i++;
+        k++;
+    }
+
+    while (i < n2) {
+        vec[k] = rightVec[i];
+        j++;
+        k++;
+    }
+}
+
+template <typename Compare>
+void ResourceManager::mergeSort(vector<Resource>& vec, int left, int right, Compare compare) {
+    if (left >= right) return;
+
+    int mid = left + (right - left) / 2;
+
+    mergeSort(vec, left, mid, compare); // Sort left half
+    mergeSort(vec, mid + 1, right, compare); // Sort right half
+    merge(vec, left, mid, right, compare); // Merge the sorted halves
 }
 
 int ResourceManager::count() const { // Simply returns the total number of resources in the vector.
