@@ -94,83 +94,34 @@ vector<Resource> ResourceManager::search(const string& keyword) const {
     return results; // Return the vector of matching resources
 }
 
-// --- SORT --- // Old sort made by D'Antae, unfortunately not satisfying the requirements for a more generic sort (Heap, Quick, Merge, etc.)
-void ResourceManager::sortResources(SortCriteria criteria) {
+// --- SORT --- //
+void ResourceManager::sortResources(SortCriteria criteria) { // TODO: Rename some of these "StringHelpers" to make sure this doens't break!
     switch (criteria) { // Switch case employing the use of the enum
         case SortCriteria::ID:
-            mergeSort(resources, 0, resources.size() - 1,
+            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getID() < b.getID(); // Sort by ID
                       });
             break;
         case SortCriteria::NAME:
-            mergeSort(resources, 0, resources.size() - 1,
+            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getName() < b.getName(); // Sort by Name
                       });
             break;
         case SortCriteria::TYPE:
-            mergeSort(resources, 0, resources.size() - 1,
+            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getType() < b.getType(); // Sort by Type
                       });
             break;
         case SortCriteria::STATUS:
-            mergeSort(resources, 0, resources.size() - 1,
+            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getStatus() < b.getStatus(); // Sort by status (Availability)
                       });
             break;
     }
-}
-
-// Since we're not comparing simple numbers but member data, we use the comparator to use a lambda function
-// to determine what at runtime we are comparing (Type, Status, Name, ID)
-void ResourceManager::merge(vector<Resource>& vec, int left, int mid, int right, function<bool(const Resource&, const Resource&)> compare) {
-    int n1 = mid - left + 1;
-    int n2 = right - mid;
-    vector<Resource> leftVec(n1), rightVec(n2);
-
-    for (int i = 0; i < n1; i++) { // Copying the data into temporary vectors
-        leftVec[i] = vec[left + i];
-    }
-    for (int j = 0; j < n2; j++) {
-        rightVec[j] = vec[mid + 1 + j];
-    }
-
-    int i = 0, j = 0, k = left;
-    // Because these aren't something simple like ints, we use the comparator here instead
-    while (i < n1 && j < n2) { // Merge the temp vectors back
-        if (!compare(rightVec[j], leftVec[i])) { // We compare right to left because it would've taken the right object first on equality, which is unstable.
-            vec[k] = leftVec[i];
-            i++;
-        } else {
-            vec[k] = rightVec[j];
-            j++;
-        }
-        k++;
-    }
-    while (i < n1) {
-        vec[k] = leftVec[i];
-        i++;
-        k++;
-    }
-
-    while (j < n2) {
-        vec[k] = rightVec[j];
-        j++;
-        k++;
-    }
-}
-
-void ResourceManager::mergeSort(vector<Resource>& vec, int left, int right, function<bool(const Resource&, const Resource&)> compare) {
-    if (left >= right) return;
-
-    int mid = left + (right - left) / 2;
-
-    mergeSort(vec, left, mid, compare); // Sort left half
-    mergeSort(vec, mid + 1, right, compare); // Sort right half
-    merge(vec, left, mid, right, compare); // Merge the sorted halves
 }
 
 int ResourceManager::count() const { // Simply returns the total number of resources in the vector.
