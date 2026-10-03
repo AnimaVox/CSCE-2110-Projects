@@ -34,6 +34,11 @@ class ReservationManager {
         // SEARCH
         // Traverses the linked list and prints every reservation whose ID, student ID, student name, resource ID, or date contains 'keyword'. Returns how many matches were found.
         //int SearchReservation(const string& keyword) const; NOT CURRENTLY USED. REDO AND IMPLEMENT LATER. -DL
+        // SEARCH (Linear Search, written manually)
+        // Each function traverses the list of reservations from the first to the last and checks every one (O(n)).
+        int searchReservation(const string& keyword) const; // Prints every reservation where ID, student ID, student name, resource ID, or date contains the keyword. Returns match count.
+        bool searchByID(const string& id) const;            // Exact-match search by reservation ID. Prints it and returns true if found.
+        int searchByStudent(const string& student) const;   // Prints every reservation where the student ID or student name contains 'student'. Returns match count.
  
         // Exact-match lookup by reservation ID, no printing.
         //bool FindByID(const string& id, Reservation& found) const; NOT CURRENTLY USED. REDO AND IMPLEMENT LATER. -DL
