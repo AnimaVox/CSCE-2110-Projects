@@ -58,6 +58,7 @@ class ReservationManager {
  
         // Helpers
         static void printHeader(); // Prints the header for reservation display
+        static bool contains(const string& text, const string& pattern); // Manual substring check, instead of using string::find
         StringHelpers strhlp; // Instance of StringHelpers for string manipulation -DL
 };
  
