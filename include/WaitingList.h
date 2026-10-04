@@ -28,6 +28,8 @@ public:
 
     bool checkWaiting(const string& resoID, Student& result);
 
+    int count() const;
+
 private:
     queue<Request> waitingStudents; // Queue containing student data
 };

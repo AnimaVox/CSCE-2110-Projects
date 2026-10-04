@@ -33,7 +33,7 @@ int main() {
 
     const string filenameRESOURCES = "data/resources.txt"; // Assume the filename for input is always "resources.txt", otherwise change this code.
     if (!resManager.loadFile(filenameRESOURCES)) {
-        cout << "Could not load \"" << filenameRESOURCES << "\". Make sure it's in the same folder as the program." << endl;
+        cout << "Could not load \"" << filenameRESOURCES << "\". Make sure it's in the 'data' folder." << endl;
         return 1; 
         // This will exit the program with a value of '1' i.e. anything other than 0 means something went wrong.
         // Can change this later so that the program just runs with no resources loaded if the file fails to load.
@@ -41,7 +41,7 @@ int main() {
 
     const string filenameRESERVATIONS = "data/reservations.txt"; // Assume the filename for input is always "reservations.txt", otherwise change this code.
     if (!resvManager.loadFile(filenameRESERVATIONS, resManager, waitList)) {
-        cout << "Could not load \"" << filenameRESERVATIONS << "\". Make sure it's in the same folder as the program." << endl;
+        cout << "Could not load \"" << filenameRESERVATIONS << "\". Make sure it's in the 'data' folder." << endl;
         return 1;
         // This will exit the program with a value of '1' i.e. anything other than 0 means something went wrong.
         // Can change this later so that the program just runs with no reservations loaded if the file fails to load.

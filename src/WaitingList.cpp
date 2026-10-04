@@ -12,7 +12,7 @@ void WaitingList::AddStudent(const Student& student, const string& resoID) { // 
     waitingStudents.push(r);
 }
 
-void WaitingList::RemoveStudent() { // Removes student at front of queue
+void WaitingList::RemoveStudent() { // Removes student at front of queue || TO-DO: Make it remove selected student (using date)
     waitingStudents.pop();
 }
 
@@ -23,12 +23,15 @@ void WaitingList::DisplayWaiting() const{
     }
 
     queue<Request>  copyQueue = waitingStudents; // Create copy of the queue
+    int inQueue = 0;
 
     while (!copyQueue.empty()) { // Display everything in the queue until empty
         cout << copyQueue.front().stu.getID() << " " << copyQueue.front().stu.getName() << " " << copyQueue.front().resoID << endl;
         copyQueue.pop();
+        inQueue++;
     }
-    cout << endl;
+
+    cout << "There are currently " << inQueue << " reservations in queue..." << endl;
 }
 
 bool WaitingList::checkWaiting(const string& resoID, Student& result) {
@@ -54,4 +57,8 @@ bool WaitingList::checkWaiting(const string& resoID, Student& result) {
     waitingStudents = move(returnQueue);
 
     return found;
+}
+
+int WaitingList::count() const { // Simply returns the total number of reservations in the list.
+    return static_cast<int>(waitingStudents.size());
 }
