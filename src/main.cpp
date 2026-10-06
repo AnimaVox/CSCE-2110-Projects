@@ -192,7 +192,7 @@ int main() {
                 case 1:
                     cout << "Enter the Reservation ID: ";
                     getline(cin, term);
-                    if (term.empty()) {cout << "Search term cannot be empty. \n"; break; }
+                    if (term.empty()) {cout << "Search term cannot be empty.\n"; break; }
                     resvManager.searchByID(term);
                     break;
                 case 2:
