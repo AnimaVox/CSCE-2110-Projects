@@ -11,6 +11,7 @@
 #include "StringHelpers.h" // StringHelpers class for string manipulation
 #include "CancellationHistory.h"
 #include "WaitingList.h"
+#include <vector>
 #include <list> // Using STL implementation of a linked list to store active reservations - DL
 using namespace std;
  
@@ -31,15 +32,15 @@ class ReservationManager {
         // If 'removed' is supplied, it is filled with the cancelled reservation so the caller can push it onto CancellationHistory (the stack).
         bool cancelReservation(const string& id, ResourceManager& rm, CancellationHistory& ch, WaitingList& wl);
  
-        // SEARCH
-        // Traverses the linked list and prints every reservation whose ID, student ID, student name, resource ID, or date contains 'keyword'. Returns how many matches were found.
-        //int SearchReservation(const string& keyword) const; NOT CURRENTLY USED. REDO AND IMPLEMENT LATER. -DL
-        // SEARCH (Linear Search, written manually)
-        // Each function traverses the list of reservations from the first to the last and checks every one (O(n)).
-        int searchReservation(const string& keyword) const; // Prints every reservation where ID, student ID, student name, resource ID, or date contains the keyword. Returns match count.
-        bool searchByID(const string& id) const;            // Exact-match search by reservation ID. Prints it and returns true if found.
-        int searchByStudent(const string& student) const;   // Prints every reservation where the student ID or student name contains 'student'. Returns match count.
- 
+       // SEARCH
+       // Traverses the linked list and prints every reservation whose ID, student ID, student name, resource ID, or date contains 'keyword'. Returns how many matches were found.
+       //int SearchReservation(const string& keyword) const; NOT CURRENTLY USED. REDO AND IMPLEMENT LATER. -DL
+       // SEARCH (Linear Search, written manually, exact match)
+       // Each function walks the list of reservations from first to last and collects every match into a vector.
+       vector<Reservation> searchByID(const string& id) const;               // Returns the reservation with exactly this ID (empty vector if none)
+       vector<Reservation> searchByStudent(const string& student) const;     // Returns every reservation whose student ID or full name equals 'student'
+       vector<Reservation> searchReservation(const string& keyword) const;   // Returns every reservation where any field equals 'keyword'
+       void displayResults(const vector<Reservation>& results) const;        // Prints a vector of search results
         // Exact-match lookup by reservation ID, no printing.
         //bool FindByID(const string& id, Reservation& found) const; NOT CURRENTLY USED. REDO AND IMPLEMENT LATER. -DL
  
