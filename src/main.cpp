@@ -17,6 +17,7 @@
 #include "../include/ResourceManager.h"
 #include "../include/WaitingList.h"
 #include "../include/CancellationHistory.h"
+#include <vector>
 #include <iostream> // cin, cout
 using namespace std;
 
@@ -172,46 +173,50 @@ int main() {
                 break;
             }
             case 7: { // Search Reservations
-            int searchChoice = -1;                            // Holds the submenu choice
-            cout << "\n === Search Reservations ===\n"
-                 << "1. Search by Reservation ID\n"
-                 << "2. Search by Student (ID or name)\n"
-                 << "3. Search by Keyword (any field)\n"
-                 << "0. Go Back\n"
-                 << "Choose an option: ";
-        
-            if (!(cin >> searchChoice)) {                     // Non-number typed: clear the error and return to the main menu
-                clearInput();
-                cout << "Please enter a number.\n";
-                break;
-            }
-            clearInput();                                     // Remove the leftover newline so getline works below
-        
-            string term;                                      // What the user wants to search for
-            switch (searchChoice) {
-                case 1:
-                    cout << "Enter the Reservation ID: ";
-                    getline(cin, term);
-                    if (term.empty()) {cout << "Search term cannot be empty.\n"; break; }
-                    resvManager.searchByID(term);
+                int searchChoice = -1;                            // Holds the submenu choice
+                cout << "\n === Search Reservations ===\n"
+                     << "1. Search by Reservation ID\n"
+                     << "2. Search by Student (ID or full name)\n"
+                     << "3. Search by Keyword (must match a whole field)\n"
+                     << "0. Go Back\n"
+                     << "Choose an option: ";
+
+                if (!(cin >> searchChoice)) {                     // Non-number typed: clear the error and return to the main menu
+                    clearInput();
+                    cout << "Please enter a number.\n";
                     break;
-                case 2:
-                    cout << "Enter the student ID or name: ";
-                    getline(cin, term);
-                    if (term.empty()) { cout << "Search term cannot be empty.\n"; break; } // Empty input would match everything
-                    resvManager.searchByStudent(term);
-                    break;
-                case 3:
-                    cout << "Enter a keyword: ";
-                    getline(cin, term);
-                    if (term.empty()) { cout << "Search term cannot be empty.\n"; break; }
-                    resvManager.searchReservation(term);
-                    break;
-                case 0:
-                    cout << "Returning to main menu.\n";
-                    break;
-                default:
-                    cout << "Invalid option, try again.\n";
+                }
+                clearInput();                                     // Remove the leftover newline so getline works below
+
+                string term;                                      // What the user wants to search for
+                vector<Reservation> results;                      // Holds the reservations that were found
+                switch (searchChoice) {
+                    case 1:
+                        cout << "Enter the Reservation ID: ";
+                        getline(cin, term);
+                        if (term.empty()) { cout << "Search term cannot be empty.\n"; break; }
+                        results = resvManager.searchByID(term);
+                        resvManager.displayResults(results);
+                        break;
+                    case 2:
+                        cout << "Enter the student ID or full name: ";
+                        getline(cin, term);
+                        if (term.empty()) { cout << "Search term cannot be empty.\n"; break; }
+                        results = resvManager.searchByStudent(term);
+                        resvManager.displayResults(results);
+                        break;
+                    case 3:
+                        cout << "Enter a keyword (must match a whole field): ";
+                        getline(cin, term);
+                        if (term.empty()) { cout << "Search term cannot be empty.\n"; break; }
+                        results = resvManager.searchReservation(term);
+                        resvManager.displayResults(results);
+                        break;
+                    case 0:
+                        cout << "Returning to main menu.\n";
+                        break;
+                    default:
+                        cout << "Invalid option, try again.\n";
                 }
                 break;
             }
