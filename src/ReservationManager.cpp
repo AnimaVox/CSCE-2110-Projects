@@ -213,85 +213,57 @@ void ReservationManager::DisplayReservations() const {
 // SEARCH
 // All of these use LINEAR SEARCH: start at the first reservation and check each one in order until the end. Time complexity is O(n).
 
-bool ReservationManager::contains(const string& text, const string& pattern) { // Returns true if 'pattern' appears anywhere inside 'text'
-    if (pattern.empty()) {                  // An empty pattern would match everything, so treat it as a match
-        return true;
-    }
-    if (pattern.size() > text.size()) {     // A pattern longer than the text can never fit inside it
-        return false;
-    }
+// SEARCH
+// All of these use LINEAR SEARCH: start at the first reservation and check each one in order until the end. Time complexity is O(n).
+// Matching is EXACT (so searching for 12345 will not return 1234), and the matching reservations are returned in a vector.
 
-    for (size_t i = 0; i + pattern.size() <= text.size(); i++) { // i = every position in text where the pattern could START
-        size_t j = 0;                       // j = how many characters of the pattern have matched so far
-        while (j < pattern.size() && text[i + j] == pattern[j]) { // Keep going while characters match and the pattern isn't used up
-            j++;                            // This character matched, move on to the next one
-        }
-        if (j == pattern.size()) {          // Every character of the pattern matched, so it was found
-            return true;
+vector<Reservation> ReservationManager::searchByID(const string& id) const {
+    vector<Reservation> results;
+    for (const auto& res : reservations) {  // Visit every reservation in order
+        if (res.getID() == id) {            // Exact match on the whole ID
+            results.push_back(res);         // Save a copy of the matching reservation
+            break;                          // IDs are unique, so there can't be another match
         }
     }
-    return false;                           // Tried every start position with no match
+    return results;                         // Empty vector means nothing was found
 }
 
-bool ReservationManager::searchByID(const string& id) const {
-    for (const auto& res : reservations) {  // Look at every reservation in the list, one at a time, in order
-        if (res.getID() == id) {            // Exact match: does this reservation's ID equal the one we want?
-            printHeader();                  // Print the column headers first
-            res.display();                  // Print the matching reservation
-            return true;                    // Found it, so stop searching (IDs are unique)
+vector<Reservation> ReservationManager::searchByStudent(const string& student) const {
+    vector<Reservation> results;
+    string lowerStudent = strhlp.toLower(student); // Lowercase so "john smith" matches "John Smith"
+    for (const auto& res : reservations) {
+        // Exact match on the student ID, or on the full student name (ignoring case)
+        if (res.getStudentID() == student || strhlp.toLower(res.getStudentName()) == lowerStudent) {
+            results.push_back(res);         // A student can have several reservations, so keep going
         }
     }
-    cout << "No reservation with ID " << id << " was found." << endl; // Reached the end of the list without a match
-    return false;
+    return results;
 }
 
-int ReservationManager::searchReservation(const string& keyword) const {
-    string lowerKeyword = strhlp.toLower(keyword); // Lowercase copy of the keyword so the search is case-insensitive
-    int matches = 0;                               // Counts how many reservations match
-    bool headerPrinted = false;                    // Makes sure the header prints only once, and only if there is a match
-
-    for (const auto& res : reservations) {         // Visit every reservation (linear search)
-        // Lowercase each field, then check whether the keyword appears inside it using contains()
-        if (contains(strhlp.toLower(res.getID()), lowerKeyword) ||
-            contains(strhlp.toLower(res.getStudentID()), lowerKeyword) ||
-            contains(strhlp.toLower(res.getStudentName()), lowerKeyword) ||
-            contains(strhlp.toLower(res.getResourceID()), lowerKeyword) ||
-            contains(strhlp.toLower(res.getDate()), lowerKeyword)) {
-            if (!headerPrinted) {                  // First match found: print the header now
-                printHeader();
-                headerPrinted = true;              // Don't print it again
-            }
-            res.display();                         // Print this matching reservation
-            matches++;                             // Count it
+vector<Reservation> ReservationManager::searchReservation(const string& keyword) const {
+    vector<Reservation> results;
+    string lowerKeyword = strhlp.toLower(keyword);
+    for (const auto& res : reservations) {
+        // Exact match on any one of the five fields (case-insensitive)
+        if (strhlp.toLower(res.getID()) == lowerKeyword ||
+            strhlp.toLower(res.getStudentID()) == lowerKeyword ||
+            strhlp.toLower(res.getStudentName()) == lowerKeyword ||
+            strhlp.toLower(res.getResourceID()) == lowerKeyword ||
+            strhlp.toLower(res.getDate()) == lowerKeyword) {
+            results.push_back(res);
         }
     }
-
-    if (matches == 0) {                            // Nothing matched at all
-        cout << "(no reservations matched \"" << keyword << "\")" << endl;
-    }
-    return matches;                                // Tell the caller how many were found
+    return results;
 }
 
-int ReservationManager::searchByStudent(const string& student) const {
-    string lowerStudent = strhlp.toLower(student); // Lowercase copy so "john" matches "John Smith"
-    int matches = 0;                               // Number of reservations found for this student
-    bool headerPrinted = false;                    // Same print-header-once idea as above
-
-    for (const auto& res : reservations) {         // Check every reservation (linear search)
-        // Match either the student's ID or any part of their name
-        if (contains(strhlp.toLower(res.getStudentID()), lowerStudent) ||
-            contains(strhlp.toLower(res.getStudentName()), lowerStudent)) {
-            if (!headerPrinted) {                  // First match: print the header
-                printHeader();
-                headerPrinted = true;
-            }
-            res.display();                         // Print the matching reservation
-            matches++;                             // Count it
-        }
+void ReservationManager::displayResults(const vector<Reservation>& results) const {
+    if (results.empty()) {                  // Nothing was found
+        cout << "No matching reservations found." << endl;
+        return;
     }
-
-    if (matches == 0) {                            // No reservations for that student
-        cout << "(no reservations found for student \"" << student << "\")" << endl;
+    printHeader();
+    for (const auto& res : results) {       // Loop through the vector and print each reservation
+        res.display();
     }
-    return matches;
+    cout << results.size() << " reservation(s) found." << endl;
 }
