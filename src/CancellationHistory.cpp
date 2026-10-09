@@ -26,7 +26,7 @@ Reservation CancellationHistory::RestoreHistory() {
     string stuName = restore.getStudentName();
     string resoID = restore.getResourceID();
 
-    cout << "Trying to restore reservation for " << stuID << "|" << stuName << " with Resource ID: " << resoID << endl;
+    cout << "Trying to restore reservation for [" << stuID << "] " << stuName << " with Resource ID: " << resoID << endl;
     cout << "Please note the reservation ID below..." << endl;
     return restore;
 }

@@ -10,6 +10,25 @@
 #include <fstream> // ifstream (used to read file)
 #include <sstream> // stringstream (used to easily convert digits into actual strings and split by delimiter)
 
+// --- HELPERS ---
+void ResourceManager::printHeader() { // Makes an neat organized header. To be used when printing other info.
+    cout << left
+         << setw(8) << "ID"
+         << setw(20) << "Name"
+         << setw(25) << "Type"
+         << setw(12) << "Status"
+         << endl;
+    cout << string(65, '-') << endl; // Line of dashes for separation
+}
+
+void ResourceManager::setStatus(const string& id,const string& status){ // Allows other classes that need to to set the status of resource, but by telling ResourceManager to do it since ResourceManager has direct access to the resource vector.
+    for(int i = 0; i < (int)resources.size(); i++){
+        if(resources[i].getID() == id){
+            resources[i].setStatus(status);
+        }
+    }
+}
+
 // --- LOAD FROM FILE ---
 bool ResourceManager::loadFile(const string& filename) {
     ifstream file(filename);
@@ -74,7 +93,6 @@ void ResourceManager::displayAvailable() const { // Display only Available resou
 }
 
 // --- SEARCH ---
-
 vector<Resource> ResourceManager::search(const string& keyword) const {
     vector<Resource> results; // Vector to store search results
 
@@ -124,22 +142,11 @@ void ResourceManager::sortResources(SortCriteria criteria) {
     }
 }
 
+// --- GETTERS ---
 int ResourceManager::count() const { // Simply returns the total number of resources in the vector.
     return static_cast<int>(resources.size());
 }
 
-// --- HELPERS ---
-void ResourceManager::printHeader() { // Makes an neat organized header. To be used when printing other info.
-    cout << left
-         << setw(8) << "ID"
-         << setw(20) << "Name"
-         << setw(25) << "Type"
-         << setw(12) << "Status"
-         << endl;
-    cout << string(65, '-') << endl; // Line of dashes for separation
-}
-
-// Getters
-vector<Resource>& ResourceManager::getResources(){
+const vector<Resource>& ResourceManager::getResources() const{
     return resources; // Returns a reference to the vector of resources
 }

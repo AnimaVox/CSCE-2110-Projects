@@ -3,13 +3,25 @@
 - Editor: D'Antae Leathers
 */
 
-#include "../include/ReservationManager.h" // updated header file path - DL
+#include "../include/ReservationManager.h"
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
 #include <fstream> // ifstream (used to read file)
 #include <sstream> // istringstream (used to parse lines)
 #include <vector> // vector (used to store parts of a line)
+
+// -- HELPERS ---
+void ReservationManager::printHeader() {
+    cout << left
+         << setw(8) << "ID"
+         << setw(12) << "StudentID"
+         << setw(20) << "StudentName"
+         << setw(12) << "ResourceID"
+         << setw(15) << "Date"
+         << endl;
+        cout << string(65, '-') << endl; // Line of dashes for separation
+}
 
 // --- CREATE ---
 bool ReservationManager::createReservation(string& id, const string& stuID, const string& stuName, const string& resoID, const string& date, ResourceManager& rm, WaitingList& wl) {
@@ -27,21 +39,6 @@ bool ReservationManager::createReservation(string& id, const string& stuID, cons
                         for (int i = id.length(); i < 3; ++i) { // pad the ID with leading zeros to ensure it is always 3 digits long
                             id = "0" + id;
                         }
-
-                        // OLD WAY OF GENERATIING A NEW RESERVATION ID -> Get the last reservation's ID using reservations.back().getID(). 
-                        // If there were no reservations, then this way of generating an ID may crash the program.
-
-                        /*id = (reservations.back().getID()); 
-                        for (const auto& res : reservations) { // Check if the next ID is already in use
-                        // Convert the ID to an integer using stoi(), increment it by 1, and convert it back to a string.
-                            if (to_string(stoi(reservations.back().getID()) + 1) != res.getID()) { // If the next ID is not already in use, use it
-                                id = to_string(stoi(reservations.back().getID()) + 1);
-                                // Converting to int drops leading zeros, so pad the ID with leading zeros to ensure it is always 3 digits long
-                                for (int i = id.length(); i < 3; ++i) { 
-                                    id = "0" + id;
-                                }
-                            }
-                        }*/
                     }
                 else{ // If reservation ID is not provided and there are no reservatons made, then this will be the first reservation. Thus, give it the 001 ID.
                     id = "001";
@@ -51,11 +48,11 @@ bool ReservationManager::createReservation(string& id, const string& stuID, cons
             // Create a new reservation with the provided ID
             Reservation newReservation(id, date, resource, Student(stuID, stuName));
             if (!ValidateReservation(newReservation, wl)) {
-                cout << "Reservation validation failed." << endl;
+                //cout << "Reservation validation failed." << endl;
                 return false; // Validation failed
             }
             reservations.push_back(newReservation);
-            resource.setStatus("Unavailable"); // Mark the resource as unavailable
+            rm.setStatus(resource.getID(),"Unavailable"); // Mark the resource as unavailable
             cout << "Reservation created successfully with ID: " << id << endl;
             return true; // Successfully created the reservation
         }
@@ -65,10 +62,10 @@ bool ReservationManager::createReservation(string& id, const string& stuID, cons
     return false; // Resource does not exist
 }
 
-bool ReservationManager::loadFile(const string& filename, ResourceManager& rm, WaitingList& wl) { // Copied directly from ResourceManager.cpp; modified to work with Reservation objects. -DL
+bool ReservationManager::loadFile(const string& filename, ResourceManager& rm, WaitingList& wl) { 
     ifstream file(filename);
     if (!file.is_open()) {
-        cerr << "Error: Could not open file " << filename << endl; // Using cerr for error messages. Writes immediately for debugging
+        cout << "Error: Could not open file " << filename << endl; // Error message for file failure
         return false; // If file cannot be opened, return false
     }
 
@@ -105,61 +102,7 @@ bool ReservationManager::loadFile(const string& filename, ResourceManager& rm, W
     return true; // Successfully loaded the file
 }
 
-// VALIDATE
-bool ReservationManager::ValidateReservation(const Reservation& resv, WaitingList& wl) const {
-    const string& studentID = resv.getStudentID();
-    const string& studentName = resv.getStudentName();
-    const string& resourceID = resv.getResourceID();
-    const string& date = resv.getDate();
-
-    // Check that all inputted fields are non-empty. 
-    // ResourceID is checked when creating the reservation 
-    // and ReservationID is generated automatically -DL
-    if (!studentID.empty() && !studentName.empty() && !date.empty()) {
-
-        // Check that the student ID is numeric -DL
-        for (char c : studentID) {
-            if (!isdigit(c)) {
-                cout << "Error: Student ID is not numeric." << endl;
-                return false;
-            }
-        }
-
-        // Check that the date is in the correct format e.g., 09/23/2026 (MM/DD/YYYY) -DL
-        if (date.length() != 10 || date[2] != '/' || date[5] != '/') {
-            cout << "Error: Date must be in the format MM/DD/YYYY." << endl;
-            return false;
-        } else if (date[0] > '1' || (date[0] == '1' && date[1] > '2') || (date[0] == '0' && date[1] == '0')) {
-            cout << "Error: Invalid month." << endl;
-            return false;
-        } else if (date[3] > '3' || (date[3] == '3' && date[4] != '0' && date[4] != '1')) { // Does not account for months with fewer than 30 days. -DL
-            cout << "Error: Invalid day." << endl;
-            return false;
-        }
-    }
-    else{
-    cout << "Error: Empty reservation data." << endl;
-    return false; 
-    }
-
-    // Check that the resource ID isn't already reserved for the given date -DL
-    for (const auto& res : reservations) {
-        if (res.getResourceID() == resourceID && res.getDate() == date) {
-            cout << "Resource already has an active reservation for the given date." << endl;
-            cout << "Adding " << studentID << "|" << studentName << " to the queue for Resource: " << resourceID << endl;
-            wl.AddStudent(Student(studentID, studentName), resourceID);
-            return false;
-        }
-    }
- 
-    return true; // All validations passed
-}
- 
-int ReservationManager::count() const { // Simply returns the total number of reservations in the list.
-    return static_cast<int>(reservations.size());
-}
-
-// CANCEL
+// --- CANCEL ---
 bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm, CancellationHistory& ch, WaitingList& wl) {
     for (auto it = reservations.begin(); it != reservations.end(); ++it) { // Must use an iterator to use erase() 
         if (it->getID() == id) { // Find the reservation to cancel
@@ -184,7 +127,7 @@ bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm
                             createReservation(newID, nextInLine.getID(), nextInLine.getName(), resourceToFree, dateToFree, rm, wl);
                         }
                         else{
-                            resource.setStatus("Available");
+                            rm.setStatus(resource.getID(),"Available");
                         }
                     }                   
                 }
@@ -197,74 +140,194 @@ bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm
     cout << "Error: No reservation with ID " << id << " exists." << endl;
     return false; // No reservation with the given ID exists
 }
+
+// --- VALIDATE---
+bool ReservationManager::ValidateReservation(const Reservation& resv, WaitingList& wl) const {
+    const string& studentID = resv.getStudentID();
+    const string& studentName = resv.getStudentName();
+    const string& resourceID = resv.getResourceID();
+    const string& date = resv.getDate();
+
+    // Check that all inputted fields are non-empty. 
+    // ResourceID is checked when creating the reservation 
+    // and ReservationID is generated automatically
+    if (!studentID.empty() && !studentName.empty() && !date.empty()) {
+
+        // Check that the student ID is numeric
+        for (char c : studentID) {
+            if (!isdigit(c)) {
+                cout << "Error: Student ID is not numeric." << endl;
+                return false;
+            }
+        }
+
+        // Check that the date is in the correct format e.g., 09/23/2026 (MM/DD/YYYY)
+        if (date.length() != 10 || date[2] != '/' || date[5] != '/') {
+            cout << "Error: Date must be in the format MM/DD/YYYY." << endl;
+            return false;
+        } else if (date[0] > '1' || (date[0] == '1' && date[1] > '2') || (date[0] == '0' && date[1] == '0')) {
+            cout << "Error: Invalid month." << endl;
+            return false;
+        } else if (date[3] > '3' || (date[3] == '3' && date[4] != '0' && date[4] != '1')) { // Does not account for months with fewer than 30 days.
+            cout << "Error: Invalid day." << endl;
+            return false;
+        }
+    }
+    else{
+    cout << "Error: Empty reservation data." << endl;
+    return false; 
+    }
+
+    // Check that the resource ID isn't already reserved for the given date
+    for (const auto& res : reservations) {
+        // If the resource is already reserved, add the student to the waiting-list for that resource
+        if (res.getResourceID() == resourceID && res.getDate() == date) {
+            cout << "Resource already has an active reservation for the given date." << endl;
+            cout << "Adding [" << studentID << "] " << studentName << " to the queue for Resource: " << resourceID << endl;
+            wl.AddStudent(Student(studentID, studentName), resourceID);
+            return false;
+        }
+    }
  
-// DISPLAY
-void ReservationManager::printHeader() {
-    cout << left
-         << setw(8) << "ID"
-         << setw(12) << "StudentID"
-         << setw(20) << "StudentName"
-         << setw(12) << "ResourceID"
-         << setw(15) << "Date"
-         << endl;
-        cout << string(65, '-') << endl; // Line of dashes for separation
+    return true; // All validations passed
 }
- 
+
+// --- SEARCH ---
+
+
+// --- DISPLAY ---
 void ReservationManager::DisplayReservations() const {
+    // Check to see if there are any reservations
     if (reservations.empty()) {
         cout << "There are no active reservations." << endl;
         return;
     }
- 
+    
+    int count = 0;
     printHeader();
+    // Print out the information for every reservation
     for (const auto& res : reservations) {
         res.display();
+        count++;
+    }
+    cout << endl << "There are currently " << count << " active reservations..." << endl;
+}
+
+// --- REPORT ---
+void ReservationManager::reportResourceUse(const vector<Resource>& resources) const{
+    
+    // Print header
+    cout << left
+         << setw(20) << "Resource"
+         << "# of Reservations"
+         << endl;
+    cout << string(40, '-') << endl; // Line of dashes for separation
+
+    // For every resource, check how many reservations are present for it.
+    for(int i = 0; i < (int)resources.size(); i++){
+        int count = 0;
+
+        for(const Reservation& res: reservations){
+            if(res.getResourceID() == resources[i].getID()){
+                count++;
+            }
+        }
+
+        // Print the resource and its number of active resorvations
+        // Because it prints directly from the resource vector, it will print in the order that is currently sorted.
+        cout << left
+        << setw(25) << resources[i].getName() 
+        << (count == 0 ? "(none)" : to_string(count)) 
+        << endl;
     }
 }
- 
-// SEARCH
- 
-// THIS FUNCTION IS COMMENTED OUT BECAUSE IT IS NOT CURRENTLY USED. REDO AND IMPLEMENT LATER. -DL
-// int ReservationManager::SearchReservation(const string& keyword) const {
-//     string lowerKeyword = strhlp.toLower(keyword);
-//     int matches = 0;
-//     bool headerPrinted = false;
- 
-//     ReservationNode* current = head;
-//     while (current != nullptr) {
-//         const Reservation& r = current->data;
-//         if (strhlp.toLower(r.getID()).find(lowerKeyword) != string::npos ||
-//             strhlp.toLower(r.getStudentID()).find(lowerKeyword) != string::npos ||
-//             strhlp.toLower(r.getStudentName()).find(lowerKeyword) != string::npos ||
-//             strhlp.toLower(r.getResourceID()).find(lowerKeyword) != string::npos ||
-//             strhlp.toLower(r.getDate()).find(lowerKeyword) != string::npos) {
-//             if (!headerPrinted) {
-//                 printHeader();
-//                 headerPrinted = true;
-//             }
-//             r.display();
-//             matches++;
-//         }
-//         current = current->next;
-//     }
- 
-//     if (matches == 0) {
-//         cout << "(no reservations matched \"" << keyword << "\")" << endl;
-//     }
- 
-//     return matches;
-// }
 
+void ReservationManager::reportMostWanted(const vector<Resource>& resources, const WaitingList& wl) const{
+    
+    struct Rank{ // Simple struct to bundle resources with their counts of active reservations (aCount) and waiting reservations (wCount)
+        Resource resource;
+        int tCount; // aCount + wCount = tCount (total requests)
+        int aCount;
+        int wCount;
+    };
+
+    vector<Rank> rankings; // Vector to store the ranks, is sorted later using selection sort in descending order.
+    vector<RequestCount> waitCounts = wl.getWaitingCounts(); // Get the waiting-list information
+
+    // Print header
+    cout << left
+         << setw(10) << "Ranking"
+         << setw(20) << "Resource"
+         << "Total Requests (Active | Waiting)"
+         << endl;
+    cout << string(55, '-') << endl; // Line of dashes for separation
+
+    // For every resource get their counts of active reservations and waiting-list reservations
+    for(int i = 0; i < (int)resources.size(); i++){
+
+        // Active reservations count
+        int activeCount = 0;
+        for(const Reservation& res: reservations){
+            if(res.getResourceID() == resources[i].getID()){
+                activeCount++;
+            }
+        }
+
+        // Waiting-list reservations count
+        int waitingCount = 0;
+        for(const auto& wait: waitCounts){
+            if(wait.resoID == resources[i].getID()){
+                waitingCount == wait.count;
+                break;
+            }
+        }
+
+        // Put the counts to their rank and add it to the rankings vector, but only if there are counts
+        if((activeCount + waitingCount) > 0){     
+            Rank r;
+            r.resource = resources[i];
+            r.tCount = activeCount + waitingCount;
+            r.aCount = activeCount;
+            r.wCount = waitingCount;
+            rankings.push_back(r);
+        }
+    }
+
+    int n = rankings.size();
+    int slots = (n < 5) ? n : 5; // Slots are the number or rankings to display, by default it is up to 5. If there are less than 5, this ensures that it will only print as much as is present.
+    
+    // For every slot fill it with a rank
+    for(int i = 0; i < slots; i++){
+        
+        // Get the index of the maximum/most requested resource.
+        int index_of_max = i;
+        for(int j = i + 1; j < n; j++){
+            if(rankings[j].tCount> rankings[index_of_max].tCount){
+                index_of_max = j;
+            }
+        }
+
+       // Sort the rankings vectors in descending order using selection sort (swaps the max into where it belongs) after every check for the max.
+       // The previous max naturally becomes the next highest. 
+       if(index_of_max != i){
+            Rank temp = rankings[i];
+            rankings[i] = rankings[index_of_max];
+            rankings[index_of_max] = temp;
+       }
+    }
+
+    // Print out the 1st up to the 5th (slot dependent) most requested resources
+    for(int i = 0; i < slots; i++){
+        cout << left
+        << setw(10) << (i == 0 ? "1st" : (i == 1 ? "2nd" : (i == 2 ? "3rd" : (i == 3 ? "4th" : "5th"))))
+        << setw(20) << rankings[i].resource.getName()
+        << rankings[i].tCount << "  (" << rankings[i].aCount << " | " << rankings[i].wCount << ")"
+        << endl;
+    }
+    cout << endl << "All other resources have " << rankings[rankings.size()-1].tCount << " or less requests..." << endl;
+}
  
-// THIS FUNCTION IS COMMENTED OUT BECAUSE IT IS NOT CURRENTLY USED. REDO AND IMPLEMENT LATER. -DL
-// bool ReservationManager::FindByID(const string& id, Reservation& found) const {
-//     ReservationNode* current = head;
-//     while (current != nullptr) {
-//         if (current->data.getID() == id) {
-//             found = current->data;
-//             return true;
-//         }
-//         current = current->next;
-//     }
-//     return false;
-// }
+// --- GETTER ---
+int ReservationManager::count() const {
+    return static_cast<int>(reservations.size());
+}

@@ -12,10 +12,6 @@ void WaitingList::AddStudent(const Student& student, const string& resoID) { // 
     waitingStudents.push(r);
 }
 
-void WaitingList::RemoveStudent() { // Removes student at front of queue || TO-DO: Make it remove selected student (using date)
-    waitingStudents.pop();
-}
-
 void WaitingList::DisplayWaiting() const{
     if (waitingStudents.empty()) { // Check if the waiting list even has anything
         cout << "The waiting list is empty!" << endl;
@@ -35,7 +31,7 @@ void WaitingList::DisplayWaiting() const{
 }
 
 bool WaitingList::checkWaiting(const string& resoID, Student& result) {
-    if (waitingStudents.empty()) { // Check if the waiting empty
+    if (waitingStudents.empty()) { // Check if the waiting-list is empty
         return false;
     }
 
@@ -59,6 +55,75 @@ bool WaitingList::checkWaiting(const string& resoID, Student& result) {
     return found;
 }
 
-int WaitingList::count() const { // Simply returns the total number of reservations in the list.
-    return static_cast<int>(waitingStudents.size());
+void WaitingList::reportWaiting() {
+   if (waitingStudents.empty()) { // Check if the waiting-list is empty
+        cout << "There are no students currently on the waiting-list..." << endl;
+        return;
+    }
+
+    // Get the counts from getWaitingCounts(). These counts are the number or students waiting for each resource.
+    vector<RequestCount> tempCounts = getWaitingCounts();
+
+    // Print out the count for each and every resource
+    cout << "There are currently: " << endl;
+    for (int i = 0; i < (int)tempCounts.size(); i++){
+        cout << tempCounts[i].count << (tempCounts[i].count == 1 ? " Student" : " Students") << " waiting for resource " << tempCounts[i].resoID << endl;
+    }
+}
+
+vector<RequestCount> WaitingList::getWaitingCounts() const {
+    
+    vector<RequestCount> waitCounts;
+
+    if (waitingStudents.empty()) { // Check if the waiting-list is empty
+        return waitCounts; // Returning an empty vector
+    }
+
+    queue<Request> tempQueue = waitingStudents; // Instead of popping and rebuilding the queue like in checkWaiting(), creating a copy of the queue to manipulate. I do this here instead, because I don't need to perserve order here.
+
+    struct Tally{ // This in-scope struct is here because I need to bundle resource IDs with specific students. This avoids having to use three parallel vectors to track IDs, Students, and the counts of their appearances.
+        string resoID;
+        vector<string> studentIDs;
+    };
+
+    vector<Tally> tallies;
+
+    // Go through the queue and take a tally of reservations for every resource
+    while (!tempQueue.empty()){
+        Request r = tempQueue.front();
+        tempQueue.pop();
+
+        int tallyIndex = -1;
+        for(int j = 0; j < (int)tallies.size(); j++){
+            if(tallies[j].resoID == r.resoID){
+                tallyIndex = j;
+                break;
+            }
+        }
+
+        if(tallyIndex == -1){
+            Tally t;
+            t.resoID = r.resoID;
+            t.studentIDs.push_back(r.stu.getID());
+            tallies.push_back(t);
+        } else {
+            bool found = false;
+            for(int k = 0; k < (int)tallies[tallyIndex].studentIDs.size(); k++){
+                if(tallies[tallyIndex].studentIDs[k] == r.stu.getID()){
+                    found = true;
+                    break;
+                }
+            }
+            
+            if(!found){
+                tallies[tallyIndex].studentIDs.push_back(r.stu.getID());
+            }
+        }
+    }
+
+    for (const auto& tally : tallies){
+        waitCounts.push_back({tally.resoID, (int)tally.studentIDs.size()});
+    }
+
+    return waitCounts;
 }

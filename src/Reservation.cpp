@@ -3,7 +3,7 @@
 - Editor: D'Antae Leathers
 */
 
-#include "../include/Reservation.h" // updated header file path - DL
+#include "../include/Reservation.h"
 #include <iostream>
 #include <iomanip>
  

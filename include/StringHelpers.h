@@ -17,7 +17,7 @@ class StringHelpers {
         vector<string> splitLine(const string& line, char delimiter); // Just splits the line of text by the delimiter, in this case it should always be "|"
         
         string toLower(const string& s) const; // Converts a string to lowercase 
-       // (The STL implementation of tolower() only works on single characters, so this is a helper to do it for the whole string)
+       // The STL implementation of tolower() only works on single characters, so this is a helper to do it for the whole string
 };
 
 #endif
