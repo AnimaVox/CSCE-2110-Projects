@@ -13,7 +13,7 @@ The code assumes the file will have the proper format i.e. "ID|NAME|TYPE|AVAILAB
 
 using namespace std;
 
-enum class SortCriteria{ // Using an enum here to avoid arbitrary ints/strings to pass to sorting functions.
+enum class SortResourceCriteria{ // Using an enum here to avoid arbitrary ints/strings to pass to sorting functions.
     // The user will see a list of options which will be mapped to these enum values.
     ID,
     NAME,
@@ -43,7 +43,7 @@ class ResourceManager {
         vector<Resource> search(const string& keyword) const; // Sub-string search for resources, case-insensitive
 
         // SORT
-        void sortResources(SortCriteria criteria); // Sorts the resources based on the specified criteria (ID, Name, Type, or Status)
+        void sortResources(SortResourceCriteria criteria); // Sorts the resources based on the specified criteria (ID, Name, Type, or Status)
         int count() const; // Returns the total number of resources
 
         // Getters

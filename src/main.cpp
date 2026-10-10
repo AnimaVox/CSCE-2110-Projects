@@ -186,10 +186,10 @@ int main() {
                     }
 
                     switch (sortChoice) {
-                        case 1: resManager.sortResources(SortCriteria::ID); break;      // Using that enum from ResourceManager.h
-                        case 2: resManager.sortResources(SortCriteria::NAME); break;
-                        case 3: resManager.sortResources(SortCriteria::TYPE); break;
-                        case 4: resManager.sortResources(SortCriteria::STATUS); break;
+                        case 1: resManager.sortResources(SortResourceCriteria::ID); break;      // Using that enum from ResourceManager.h
+                        case 2: resManager.sortResources(SortResourceCriteria::NAME); break;
+                        case 3: resManager.sortResources(SortResourceCriteria::TYPE); break;
+                        case 4: resManager.sortResources(SortResourceCriteria::STATUS); break;
                         default:
                         cout << "Invalid choice.\n";
                         continue;

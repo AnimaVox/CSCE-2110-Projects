@@ -95,27 +95,28 @@ vector<Resource> ResourceManager::search(const string& keyword) const {
 }
 
 // --- SORT --- //
-void ResourceManager::sortResources(SortCriteria criteria) { // TODO: Rename some of these "StringHelpers" to make sure this doens't break!
+// NOTE: Renamed original SortCriteria to be distictive of either Resources or Reservations so different enum classes can co-exist.
+void ResourceManager::sortResources(SortResourceCriteria criteria) { // TODO: Rename some of these "StringHelpers" if we change it!
     switch (criteria) { // Switch case employing the use of the enum
-        case SortCriteria::ID:
+        case SortResourceCriteria::ID:
             StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getID() < b.getID(); // Sort by ID
                       });
             break;
-        case SortCriteria::NAME:
+        case SortResourceCriteria::NAME:
             StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getName() < b.getName(); // Sort by Name
                       });
             break;
-        case SortCriteria::TYPE:
+        case SortResourceCriteria::TYPE:
             StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getType() < b.getType(); // Sort by Type
                       });
             break;
-        case SortCriteria::STATUS:
+        case SortResourceCriteria::STATUS:
             StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getStatus() < b.getStatus(); // Sort by status (Availability)

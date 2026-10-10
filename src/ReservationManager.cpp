@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <fstream> // ifstream (used to read file)
+#include <list>
 #include <sstream> // istringstream (used to parse lines)
 #include <vector> // vector (used to store parts of a line)
 
@@ -16,18 +17,18 @@ bool ReservationManager::createReservation(string& id, const string& stuID, cons
     for (auto& resource : rm.getResources()) {
         if (resource.getID() == resoID) { // Check if the resource exists in the ResourceManager
             // Resource exists, proceed
-           
+
             // If no reservation ID was provided, generate a new reservation ID based on the reservations in the list.
             if (id.empty()) {
                 // Get the last reservation's ID using reservations.back().getID().
                 id = (reservations.back().getID());
-        
+
                 for (const auto& res : reservations) { // Check if the next ID is already in use
                     // Convert the ID to an integer using stoi(), increment it by 1, and convert it back to a string.
                     if (to_string(stoi(reservations.back().getID()) + 1) != res.getID()) { // If the next ID is not already in use, use it
                         id = to_string(stoi(reservations.back().getID()) + 1);
                         // Converting to int drops leading zeros, so pad the ID with leading zeros to ensure it is always 3 digits long
-                        for (int i = id.length(); i < 3; ++i) { 
+                        for (int i = id.length(); i < 3; ++i) {
                             id = "0" + id;
                         }
                     }
@@ -98,8 +99,8 @@ bool ReservationManager::ValidateReservation(const Reservation& resv, WaitingLis
     const string& resourceID = resv.getResourceID();
     const string& date = resv.getDate();
 
-    // Check that all inputted fields are non-empty. 
-    // ResourceID is checked when creating the reservation 
+    // Check that all inputted fields are non-empty.
+    // ResourceID is checked when creating the reservation
     // and ReservationID is generated automatically -DL
     if (!studentID.empty() && !studentName.empty() && !date.empty()) {
 
@@ -125,7 +126,7 @@ bool ReservationManager::ValidateReservation(const Reservation& resv, WaitingLis
     }
     else{
     cout << "Error: Empty reservation data." << endl;
-    return false; 
+    return false;
     }
 
     // Check that the resource ID isn't already reserved for the given date -DL
@@ -137,30 +138,84 @@ bool ReservationManager::ValidateReservation(const Reservation& resv, WaitingLis
             return false;
         }
     }
- 
+
     return true; // All validations passed
 }
- 
+
+// --- SORT --- //
+void ReservationManager::insertionSort(list<Reservation>& reservations, function<bool (const Reservation&, const Reservation&)> compare) {
+    list<Reservation> sorted; // The "Sorted" part of the list
+
+    while (!reservations.empty()) { // The idea being that we're emptying the orignal list into the sorted list to then move back into the orignal list once it's sorted
+        auto current = reservations.begin(); // Points to the next node to insert
+        const Reservation& value = *current; // "value" saves the current "value" so the code can compare it while moving the node
+
+        // Quick check to make sure if the "sorted" list isn't already empty or if the "value" should belong at the end of the sorted list
+        if (sorted.empty() || !compare(value, sorted.back())) {
+            sorted.splice(sorted.end(), reservations, current); // Puts the "value" at the end of the "Sorted" list
+        } else { // Else, search for where the "value" should be
+            auto position = sorted.begin();
+
+            while (position != sorted.end() && !compare(value, *position)) { // This includes moving the position past "equivalant values", this preserves the stability of the original order of said "equivalant values"
+                ++position;
+            }
+            sorted.splice(position, reservations, current); // Moves the node at "current" out from the original list into the sorted list.
+        }
+    }
+    reservations.splice(reservations.end(), sorted); // After the orignal list was emptied and sorted, tranfer the sorted list back into the orignal list.
+}
+
+// NOTE: Renamed original SortCriteria to be distictive of either Resources or Reservations so different enum classes can co-exist.
+void ReservationManager::sortReservations(SortReservationCriteria criteria) {
+    switch (criteria) { // Switch case employing the use of the enum
+        case SortReservationCriteria::ID:
+            insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
+                          return a.getID() < b.getID(); // Sort by ID
+                      });
+            break;
+        case SortReservationCriteria::DATE:
+            insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
+                          return a.getDate() < b.getDate(); // Sort by Name
+                      });
+            break;
+        case SortReservationCriteria::STUDENTID:
+            insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
+                          return a.getStudentID() < b.getStudentID(); // Sort by Type
+                      });
+            break;
+        case SortReservationCriteria::STUDENTNAME:
+            insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
+                          return a.getStudentName() < b.getStudentName(); // Sort by status (Availability)
+                      });
+            break;
+        case SortReservationCriteria::RESOURCEID:
+            insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
+                          return a.getResourceID() < b.getResourceID(); // Sort by status (Availability)
+                      });
+            break;
+    }
+}
+
 int ReservationManager::count() const { // Simply returns the total number of reservations in the list.
     return static_cast<int>(reservations.size());
 }
 
 // CANCEL
 bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm, CancellationHistory& ch, WaitingList& wl) {
-    for (auto it = reservations.begin(); it != reservations.end(); ++it) { // Must use an iterator to use erase() 
+    for (auto it = reservations.begin(); it != reservations.end(); ++it) { // Must use an iterator to use erase()
         if (it->getID() == id) { // Find the reservation to cancel
             ch.AddHistory(*it);
             string resourceToFree = it->getResourceID(); // Get the resource for the reservation
             string dateToFree = it->getDate();
             reservations.erase(it); // Remove the reservation from the list
-            
+
             bool reservedByAnother = false; // Check if any other reservations use that resource
             for(const auto& res: reservations){
                 if (res.getResourceID() == resourceToFree){
                     reservedByAnother = true;
                 }
             }
-            
+
             for (auto& resource : rm.getResources()){ // Find the resource in the collection and set it to "Available" if there are no other reservations.
                 if(resource.getID() == resourceToFree){
                     if (!reservedByAnother){
@@ -172,18 +227,18 @@ bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm
                         else{
                             resource.setStatus("Available");
                         }
-                    }                   
+                    }
                 }
             }
 
             cout << "Reservation with ID " << id << " has been cancelled." << endl;
             return true; // Successfully cancelled the reservation
         }
-    }    
+    }
     cout << "Error: No reservation with ID " << id << " exists." << endl;
     return false; // No reservation with the given ID exists
 }
- 
+
 // DISPLAY
 void ReservationManager::printHeader() {
     cout << left
@@ -195,27 +250,27 @@ void ReservationManager::printHeader() {
          << endl;
         cout << string(65, '-') << endl; // Line of dashes for separation
 }
- 
+
 void ReservationManager::DisplayReservations() const {
     if (reservations.empty()) {
         cout << "There are no active reservations." << endl;
         return;
     }
- 
+
     printHeader();
     for (const auto& res : reservations) {
         res.display();
     }
 }
- 
+
 // SEARCH
- 
+
 // THIS FUNCTION IS COMMENTED OUT BECAUSE IT IS NOT CURRENTLY USED. REDO AND IMPLEMENT LATER. -DL
 // int ReservationManager::SearchReservation(const string& keyword) const {
 //     string lowerKeyword = strhlp.toLower(keyword);
 //     int matches = 0;
 //     bool headerPrinted = false;
- 
+
 //     ReservationNode* current = head;
 //     while (current != nullptr) {
 //         const Reservation& r = current->data;
@@ -233,15 +288,15 @@ void ReservationManager::DisplayReservations() const {
 //         }
 //         current = current->next;
 //     }
- 
+
 //     if (matches == 0) {
 //         cout << "(no reservations matched \"" << keyword << "\")" << endl;
 //     }
- 
+
 //     return matches;
 // }
 
- 
+
 // THIS FUNCTION IS COMMENTED OUT BECAUSE IT IS NOT CURRENTLY USED. REDO AND IMPLEMENT LATER. -DL
 // bool ReservationManager::FindByID(const string& id, Reservation& found) const {
 //     ReservationNode* current = head;
