@@ -17,6 +17,7 @@ using namespace std;
 struct Request{ // Struct for bundling Student info and resource ID. Stored in the waiting-list queue, and used to generate its contents.
     Student stu;
     string resoID;
+    string date;
 };
 
 struct RequestCount{ // Struct for bundling resource IDs to a count. Used in getWaitingCount() 
@@ -26,11 +27,11 @@ struct RequestCount{ // Struct for bundling resource IDs to a count. Used in get
 
 class WaitingList {
 public:
-    void AddStudent(const Student& student, const string& resoID); // Takes student object to add to queue
+    void AddStudent(const Student& student, const string& resoID, const string& date); // Takes student object to add to queue
 
     void DisplayWaiting() const; // This should create a copy of the original queue so we don't accidentally destroy the actual queue displaying the data
 
-    bool checkWaiting(const string& resoID, Student& result); // Checks all elements of the elements for a specific resource ID and returns true if any Student us currently waiting on it, false otherwise
+    bool checkWaiting(const string& resoID, Student& result, string& date); // Checks all elements of the elements for a specific resource ID and returns true if any Student us currently waiting on it, false otherwise
 
     void reportWaiting(); // Reports the number of students waiting for each resources that has student(s) waiting on them.
 

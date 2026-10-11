@@ -24,10 +24,24 @@ void ReservationManager::printHeader() {
 }
 
 // --- CREATE ---
-bool ReservationManager::createReservation(string& id, const string& stuID, const string& stuName, const string& resoID, const string& date, ResourceManager& rm, WaitingList& wl) {
+bool ReservationManager::createReservation(string& id, const string& stuID, const string& stuName, const string& resoID, const string& date, ResourceManager& rm, WaitingList& wl, bool bypass) {
     for (auto& resource : rm.getResources()) {
         if (resource.getID() == resoID) { // Check if the resource exists in the ResourceManager
             // Resource exists, proceed
+
+            // If a reservation ID was provided e.g. through a canclled reservation being restored
+            // check if it already exists and clear it to prevent duplicates.
+            // This is to prevent a edge-case where the maxID reservation is cancelled, 
+            // a new reservation is made (making it the new maxID with the same ID as the cancelled reservation),
+            // then restored, creating a duplicate reservation ID in the list.
+            if (!id.empty()) {
+                for (const auto& res : reservations) {
+                    if (res.getID() == id) {
+                        id = ""; // By making the id empty, it will naturally generate a new one with the next block of code.
+                        break;
+                    }
+                }
+            }
            
             // If no reservation ID was provided, generate a new reservation ID based on the reservations in the list.
             if (id.empty()) {
@@ -47,18 +61,26 @@ bool ReservationManager::createReservation(string& id, const string& stuID, cons
 
             // Create a new reservation with the provided ID
             Reservation newReservation(id, date, resource, Student(stuID, stuName));
-            if (!ValidateReservation(newReservation, wl)) {
-                //cout << "Reservation validation failed." << endl;
-                return false; // Validation failed
+
+            // Bypss validation if told to by the call (used in loadFile).
+            if(!bypass){
+                if (!ValidateReservation(newReservation, rm, wl)) {
+                    //cout << "Reservation validation failed." << endl;
+                    return false; // Validation failed
+                }
             }
             reservations.push_back(newReservation);
-            rm.setStatus(resource.getID(),"Unavailable"); // Mark the resource as unavailable
+
+            if(!bypass){
             cout << "Reservation created successfully with ID: " << id << endl;
+            }
             return true; // Successfully created the reservation
         }
     }
 
-    cout << "Error: Resource with ID " << resoID << " does not exist." << endl;
+    if(!bypass){
+        cout << "Error: Resource with ID {" << resoID << "} does not exist." << endl;
+    }
     return false; // Resource does not exist
 }
 
@@ -95,7 +117,8 @@ bool ReservationManager::loadFile(const string& filename, ResourceManager& rm, W
         string resoID = parts[3];
         string date = parts[4];
 
-        createReservation(id, stuID, stuName, resoID, date, rm, wl); // Create a new reservation with the parsed data
+        // Bypass validation for pre-existing file records.
+        createReservation(id, stuID, stuName, resoID, date, rm, wl, true); // Create a new reservation with the parsed data
     }
 
     file.close();
@@ -108,26 +131,28 @@ bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm
         if (it->getID() == id) { // Find the reservation to cancel
             ch.AddHistory(*it);
             string resourceToFree = it->getResourceID(); // Get the resource for the reservation
-            string dateToFree = it->getDate();
+            string dateToFree = it->getDate(); // Get the date for the reservation
             reservations.erase(it); // Remove the reservation from the list
             
-            bool reservedByAnother = false; // Check if any other reservations use that resource
+            bool reservedByAnother = false; // Check if any other reservations use that resource for the same date.
             for(const auto& res: reservations){
-                if (res.getResourceID() == resourceToFree){
+                if (res.getResourceID() == resourceToFree && res.getDate() == dateToFree){
                     reservedByAnother = true;
+                    break;
                 }
             }
             
-            for (auto& resource : rm.getResources()){ // Find the resource in the collection and set it to "Available" if there are no other reservations.
+            for (auto& resource : rm.getResources()){ // If someone else was waiting for the resource, make their reservation now.
                 if(resource.getID() == resourceToFree){
                     if (!reservedByAnother){
                         Student nextInLine;
-                        if (wl.checkWaiting(resourceToFree, nextInLine)) {
+                        string nextDate = "";
+                        // nextInLine will be set to the next student in line for the resource, and nextDate will be set to the date they requested through checkWaiting().
+                        if (wl.checkWaiting(resourceToFree, nextInLine, nextDate)) { 
                             string newID = ""; // let createReservation auto-generate it
-                            createReservation(newID, nextInLine.getID(), nextInLine.getName(), resourceToFree, dateToFree, rm, wl);
-                        }
-                        else{
-                            rm.setStatus(resource.getID(),"Available");
+                            cout << "Resource ID " << resourceToFree << " is now open for "<< dateToFree 
+                            << ". Making reservation for [" << nextInLine.getID() << "] " << nextInLine.getName() << " on " << nextDate << endl;
+                            createReservation(newID, nextInLine.getID(), nextInLine.getName(), resourceToFree, nextDate, rm, wl);
                         }
                     }                   
                 }
@@ -142,7 +167,7 @@ bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm
 }
 
 // --- VALIDATE---
-bool ReservationManager::ValidateReservation(const Reservation& resv, WaitingList& wl) const {
+bool ReservationManager::ValidateReservation(const Reservation& resv, ResourceManager& rm, WaitingList& wl) const {
     const string& studentID = resv.getStudentID();
     const string& studentName = resv.getStudentName();
     const string& resourceID = resv.getResourceID();
@@ -174,8 +199,18 @@ bool ReservationManager::ValidateReservation(const Reservation& resv, WaitingLis
         }
     }
     else{
-    cout << "Error: Empty reservation data." << endl;
-    return false; 
+        cout << "Error: Empty reservation data." << endl;
+        return false; 
+    }
+
+    for(const auto& reso : rm.getResources()){ // Check if the resource itself is available.
+        if(reso.getID() == resourceID){
+            if(!reso.isAvailable()){
+                cout << "Error: Resource is currently unavailable." << endl;
+                return false;
+            }
+            break;
+        }
     }
 
     // Check that the resource ID isn't already reserved for the given date
@@ -184,7 +219,7 @@ bool ReservationManager::ValidateReservation(const Reservation& resv, WaitingLis
         if (res.getResourceID() == resourceID && res.getDate() == date) {
             cout << "Resource already has an active reservation for the given date." << endl;
             cout << "Adding [" << studentID << "] " << studentName << " to the queue for Resource: " << resourceID << endl;
-            wl.AddStudent(Student(studentID, studentName), resourceID);
+            wl.AddStudent(Student(studentID, studentName), resourceID, date);
             return false;
         }
     }
@@ -277,7 +312,7 @@ void ReservationManager::reportMostWanted(const vector<Resource>& resources, con
         int waitingCount = 0;
         for(const auto& wait: waitCounts){
             if(wait.resoID == resources[i].getID()){
-                waitingCount == wait.count;
+                waitingCount = wait.count;
                 break;
             }
         }
@@ -294,6 +329,11 @@ void ReservationManager::reportMostWanted(const vector<Resource>& resources, con
     }
 
     int n = rankings.size();
+    if (n == 0) {
+        cout << "No resources have any active or waiting reservations." << endl;
+        return;
+    }
+
     int slots = (n < 5) ? n : 5; // Slots are the number or rankings to display, by default it is up to 5. If there are less than 5, this ensures that it will only print as much as is present.
     
     // For every slot fill it with a rank
@@ -324,7 +364,10 @@ void ReservationManager::reportMostWanted(const vector<Resource>& resources, con
         << rankings[i].tCount << "  (" << rankings[i].aCount << " | " << rankings[i].wCount << ")"
         << endl;
     }
-    cout << endl << "All other resources have " << rankings[rankings.size()-1].tCount << " or less requests..." << endl;
+
+    if(!rankings.empty()){
+    cout << endl << "There are " << (n - slots == 0 ? "no other requests..." : to_string(n - slots) + " other requests...") << endl;
+    }
 }
  
 // --- GETTER ---

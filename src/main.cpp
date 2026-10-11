@@ -82,7 +82,7 @@ int main() {
             case 1: { //  // --- SUB-MENU [RESOURCES] "Manage Resources" ---
                 int subchoice = -1;
                 while (subchoice != 0){
-                    cout << "\n === Managing Resources ===\n"
+                    cout << "\n=== Managing Resources ===\n"
                     << "1. Display All Resources\n"
                     << "2. Display Available Resources\n"
                     << "3. Search Resources\n"
@@ -164,16 +164,17 @@ int main() {
                 break;
             }
 
-            case 2: { // --- SUB-MENU [RESERVATIONS] "Manage Reservations"
+            case 2: { // --- SUB-MENU [RESERVATIONS] "Manage Reservations" ---
                 int subchoice = -1;
                 while (subchoice != 0){
-                    cout << "\n === Managing Reservations ===\n"
+                    cout << "\n=== Managing Reservations ===\n"
                     << "1. Display Active Reservations\n"
                     << "2. Create a Reservation\n"
                     << "3. Cancel a Reservation\n"
-                    << "4. Undo Cancellation\n"
-                    << "5. Search Reservations\n"
-                    << "6. Sort Reservations\n"
+                    << "4. Display Cancellation History\n"
+                    << "5. Undo Cancellation\n"
+                    << "6. Search Reservations\n"
+                    << "7. Sort Reservations\n"
                     << "0. Go Back\n"
                     << "Choose an option: ";
 
@@ -211,7 +212,12 @@ int main() {
                             resvManager.cancelReservation(removeID, resManager, cancels, waitList);
                             break;
                         }
-                        case 4: { // Undo Cancellation
+                        case 4: { // Display Cancellation History
+                            cout << "\n-- Cancellation History --\n";
+                            cancels.DisplayHistory();
+                            break;
+                        }
+                        case 5: { // Undo Cancellation
                             Reservation retrievedReservation = cancels.RestoreHistory();
                             string restoreID = retrievedReservation.getID();
                             string restoreStuID = retrievedReservation.getStudentID();
@@ -219,14 +225,26 @@ int main() {
                             string restoreResoID = retrievedReservation.getResourceID();
                             string restoreDate = retrievedReservation.getDate();
 
-                            resvManager.createReservation(restoreID, restoreStuID, restoreStuName, restoreResoID, restoreDate, resManager, waitList);
+                            if(resvManager.createReservation(restoreID, restoreStuID, restoreStuName, restoreResoID, restoreDate, resManager, waitList)) {
+                                cancels.removeHistory();
+                            } else {
+                                for (const auto& res : resManager.getResources()) {
+                                    if (res.getID() == restoreResoID && !res.isAvailable()) {
+                                        cancels.removeHistory(); // Remove the reservation from history if the resource is unavailable
+                                        cout << "The reservation cannot be restored and has been removed from history." << endl;
+                                        break;
+                                    }
+                                }
+
+                                cancels.removeHistory(); // Remove the reservation from history if it cannot be restored
+                            }
                             break;
                         }
-                        case 5: { // Search Reservations **** TO BE IMPLEMENTED ****
+                        case 6: { // Search Reservations **** TO BE IMPLEMENTED ****
                             cout << "This feature is not yet implemented... \n";
                             break;
                         }
-                        case 6: { // Sort Reservations **** TO BE IMPLEMENTED ****
+                        case 7: { // Sort Reservations **** TO BE IMPLEMENTED ****
                             cout << "This feature is not yet implemented...\n";
                             break;
                         }
@@ -246,7 +264,7 @@ int main() {
                 break;
             }
 
-            case 4: { // --- SUB-MENU [REPORTS] "Generate Reports"
+            case 4: { // --- SUB-MENU [REPORTS] "Generate Reports" ---
                 int subchoice = -1;
                 while (subchoice != 0){
                     cout << "\n === Generating Reports ===\n"

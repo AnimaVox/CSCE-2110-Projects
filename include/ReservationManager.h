@@ -26,7 +26,7 @@ class ReservationManager {
     public:
         // --- CREATE ---
         // Validates the fields, then inserts the new reservation at the end of the linked list. Returns false if validation fails.
-        bool createReservation(string& id, const string& studentID, const string& studentName, const string& resourceID, const string& date, ResourceManager& rm, WaitingList& wl);
+        bool createReservation(string& id, const string& studentID, const string& studentName, const string& resourceID, const string& date, ResourceManager& rm, WaitingList& wl, bool bypass = false);
         
         // Read reservations from a file. Returns false if the file cannot be opened or if any line has an incorrect format.
         bool loadFile(const string& filename, ResourceManager& rm, WaitingList& wl);
@@ -37,7 +37,7 @@ class ReservationManager {
         
         // --- VALIDATE ---
         // Checks that fields are non-empty and supplied with valid values e.g. date is MM/DD/YYY, ID is numeric. Also checks if resource is available for the given date of the reservation, if not adds the reservation to the waiting list.
-        bool ValidateReservation(const Reservation& res, WaitingList& wl) const;
+        bool ValidateReservation(const Reservation& res, ResourceManager& rm, WaitingList& wl) const;
         
         // --- SEARCH ---
 

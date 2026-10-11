@@ -3,7 +3,7 @@
 */
 
 #include "../include/ResourceManager.h"
-#include <iostream> // cin, cout, cerr
+#include <iostream> // cin, cout
 #include <iomanip> // setw
 #include <algorithm> //transform, find
 #include <cctype> // tolower
@@ -33,7 +33,7 @@ void ResourceManager::setStatus(const string& id,const string& status){ // Allow
 bool ResourceManager::loadFile(const string& filename) {
     ifstream file(filename);
     if (!file.is_open()) {
-        cerr << "Error: Could not open file " << filename << endl; // Using cerr for error messages. Writes immediately for debugging
+        cout << "Error: Could not open file " << filename << endl; // Using cerr for error messages. Writes immediately for debugging
         return false; // If file cannot be opened, return false
     }
 
@@ -70,22 +70,28 @@ void ResourceManager::displayAll() const { // Displays all loaded resources
         return;
     }
 
+    int count = 0;
     printHeader();
     for (const auto& resource : resources) {
         resource.display();
+        count++;
     }
+    cout << endl << "There are currently " << count << " resources being managed..." << endl;
 }
 
 void ResourceManager::displayAvailable() const { // Display only Available resources
     bool foundAvailable = false;
+    int count = 0;
 
     printHeader();
     for (const auto& resource : resources) {
         if (resource.isAvailable()) {
             resource.display();
             foundAvailable = true;
+            count++;
         }
     }
+    cout << endl << "There are currently " << count << " available resources..." << endl;
 
     if (!foundAvailable) { // If there are no Available resources, print this.
         cout << "No available resources found." << endl;

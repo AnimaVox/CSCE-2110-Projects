@@ -5,16 +5,17 @@
 
 #include "../include/WaitingList.h"
 
-void WaitingList::AddStudent(const Student& student, const string& resoID) { // Adds student to queue
+void WaitingList::AddStudent(const Student& student, const string& resoID, const string& date) { // Adds student to queue
     Request r;
     r.stu = student;
     r.resoID = resoID;
+    r.date = date;
     waitingStudents.push(r);
 }
 
 void WaitingList::DisplayWaiting() const{
     if (waitingStudents.empty()) { // Check if the waiting list even has anything
-        cout << "The waiting list is empty!" << endl;
+        cout << "The waiting-list is empty!" << endl;
         return;
     }
 
@@ -22,7 +23,8 @@ void WaitingList::DisplayWaiting() const{
     int inQueue = 0;
 
     while (!copyQueue.empty()) { // Display everything in the queue until empty
-        cout << copyQueue.front().stu.getID() << " " << copyQueue.front().stu.getName() << " " << copyQueue.front().resoID << endl;
+        cout << copyQueue.front().stu.getID() << " " << copyQueue.front().stu.getName() << " " << copyQueue.front().resoID << " @ " 
+        << copyQueue.front().date << endl;
         copyQueue.pop();
         inQueue++;
     }
@@ -30,7 +32,7 @@ void WaitingList::DisplayWaiting() const{
     cout << "There are currently " << inQueue << " reservations in queue..." << endl;
 }
 
-bool WaitingList::checkWaiting(const string& resoID, Student& result) {
+bool WaitingList::checkWaiting(const string& resoID, Student& result, string& date) { // Checks all elements of the elements for a specific resource ID and returns true if any Student us currently waiting on it, false otherwise
     if (waitingStudents.empty()) { // Check if the waiting-list is empty
         return false;
     }
@@ -45,6 +47,7 @@ bool WaitingList::checkWaiting(const string& resoID, Student& result) {
         if (current.resoID == resoID && !found){
             found = true;
             result = current.stu;
+            date = current.date;
         } else {
             returnQueue.push(current);
         }
