@@ -7,12 +7,12 @@ This class manages "Resource" objects. It loads them from a file, stores them in
 #define RESOURCE_MANAGER_H
 
 #include "Resource.h"
-#include "StringHelpers.h" // StringHelpers class for string manipulation
+#include "Helpers.h" // Helpers class for string manipulation and sorting
 #include <vector>
 
 using namespace std;
 
-enum class SortCriteria{ // Using an enum here for readibility when calling sort functions
+enum class SortCriteriaReso{ // Using an enum here for readibility when calling sort functions
     ID,
     NAME,
     TYPE,
@@ -25,8 +25,7 @@ class ResourceManager {
 
         // Helpers
         static void printHeader(); // Prints the header for resource display
-  
-        StringHelpers strhlp; // Instance of StringHelpers for string manipulation    
+        Helpers hlp; // Instance of Helpers for string manipulation and sorting   
     
     public:
         // Helpers
@@ -45,7 +44,7 @@ class ResourceManager {
         vector<Resource> search(const string& keyword) const; // Sub-string search for resources, case-insensitive
         
         // --- SORT ---
-        void sortResources(SortCriteria criteria); // Sorts the resources based on the specified criteria (ID, Name, Type, or Status)
+        void sortResources(SortCriteriaReso criteria); // Sorts the resources based on the specified criteria (ID, Name, Type, or Status)
 
         // --- GETTERS ---
         int count() const; // Returns the total number of resources

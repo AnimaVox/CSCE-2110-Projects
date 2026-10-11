@@ -103,7 +103,7 @@ bool ReservationManager::loadFile(const string& filename, ResourceManager& rm, W
             continue; // Skip empty lines
         }
 
-        vector<string> parts = strhlp.splitLine(line, '|'); // Split the line into parts using '|' as the delimiter
+        vector<string> parts = hlp.splitLine(line, '|'); // Split the line into parts using '|' as the delimiter
 
         if (parts.size() != 5) { // Ensure that there are exactly 5 parts (ID, Student ID, Student Name, Resource ID, Date)
             cerr << "Warning: Line " << lineNumber << " in file " << filename << " has incorrect format." << endl;
@@ -229,6 +229,36 @@ bool ReservationManager::ValidateReservation(const Reservation& resv, ResourceMa
 
 // --- SEARCH ---
 
+// --- SORT ---
+void ReservationManager::sortReservations(SortCriteriaResv criteria) {
+    switch (criteria) { // Switch case employing the use of the enum
+        case SortCriteriaResv::ID:
+            hlp.insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
+                          return a.getID() < b.getID(); // Sort by ID
+                      });
+            break;
+        case SortCriteriaResv::STUDENTID:
+            hlp.insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
+                          return a.getStudentID() < b.getStudentID(); // Sort by Type
+                      });
+            break;
+        case SortCriteriaResv::STUDENTNAME:
+            hlp.insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
+                          return a.getStudentName() < b.getStudentName(); // Sort by status (Availability)
+                      });
+            break;
+        case SortCriteriaResv::RESOURCEID:
+            hlp.insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
+                          return a.getResourceID() < b.getResourceID(); // Sort by status (Availability)
+                      });
+            break;
+        case SortCriteriaResv::DATE:
+            hlp.insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
+                          return a.getDate() < b.getDate(); // Sort by Name
+                      });
+            break;
+    }
+}
 
 // --- DISPLAY ---
 void ReservationManager::DisplayReservations() const {
@@ -253,9 +283,9 @@ void ReservationManager::reportResourceUse(const vector<Resource>& resources) co
     
     // Print header
     cout << left
-         << setw(20) << "Resource"
-         << "# of Reservations"
-         << endl;
+        << setw(20) << "Resource"
+        << "# of Reservations"
+        << endl;
     cout << string(40, '-') << endl; // Line of dashes for separation
 
     // For every resource, check how many reservations are present for it.

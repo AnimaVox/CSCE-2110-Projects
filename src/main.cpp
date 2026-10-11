@@ -126,8 +126,8 @@ int main() {
                             }
                             break;
                         }
-                        case 4: { // Sort Resources (by term) **** TO BE IMPLEMENTED ****
-                            cout << "Sort by: 1) ID  2) Name  3) Type  4) Status\n";
+                        case 4: { // Sort Resources (by term)
+                            cout << "Sort by: 1) ID || 2) Name || 3) Type || 4) Status\n";
                             cout << "Choice: ";
                             int sortChoice;
                             if (!(cin >> sortChoice)) {
@@ -138,10 +138,10 @@ int main() {
                             clearLine();
 
                             switch (sortChoice) {
-                                case 1: resManager.sortResources(SortCriteria::ID); break;      // Using enum from ResourceManager.h
-                                case 2: resManager.sortResources(SortCriteria::NAME); break;
-                                case 3: resManager.sortResources(SortCriteria::TYPE); break;
-                                case 4: resManager.sortResources(SortCriteria::STATUS); break;
+                                case 1: resManager.sortResources(SortCriteriaReso::ID); break;      // Using enum from ResourceManager.h
+                                case 2: resManager.sortResources(SortCriteriaReso::NAME); break;
+                                case 3: resManager.sortResources(SortCriteriaReso::TYPE); break;
+                                case 4: resManager.sortResources(SortCriteriaReso::STATUS); break;
                                 default:
                                     cout << "Invalid choice.\n";
                                     continue;
@@ -244,8 +244,34 @@ int main() {
                             cout << "This feature is not yet implemented... \n";
                             break;
                         }
-                        case 7: { // Sort Reservations **** TO BE IMPLEMENTED ****
-                            cout << "This feature is not yet implemented...\n";
+                        case 7: { // Sort Reservations
+                            cout << "Sort by: 1) ID || 2) Student ID || 3) Student Name || 4) Resource ID || 5) Date\n";
+                            cout << "Choice: ";
+                            int sortChoice;
+                            if (!(cin >> sortChoice)) {
+                                resetInput();
+                                cout << "Invalid choice.\n";
+                                break;
+                            }
+                            clearLine();
+
+                            switch (sortChoice) {
+                                case 1: resvManager.sortReservations(SortCriteriaResv::ID); break;      // Using enum from ReservationManager.h
+                                case 2: resvManager.sortReservations(SortCriteriaResv::STUDENTID); break;
+                                case 3: resvManager.sortReservations(SortCriteriaResv::STUDENTNAME); break;
+                                case 4: resvManager.sortReservations(SortCriteriaResv::RESOURCEID); break;
+                                case 5: resvManager.sortReservations(SortCriteriaResv::DATE); break;
+                                default:
+                                    cout << "Invalid choice.\n";
+                                    continue;
+                            }
+                                
+                            cout << "\n-- Sorted Reservations " << 
+                            (sortChoice == 1 ? "(by ID)" :
+                            (sortChoice == 2 ? "(by Student ID)" :
+                            (sortChoice == 3 ? "(by Student Name)" : 
+                            (sortChoice == 4 ? "(by Resource ID)" : "(by Date)")))) << " --\n";
+                            resvManager.DisplayReservations();
                             break;
                         }
                         case 0: // Go back to main menu

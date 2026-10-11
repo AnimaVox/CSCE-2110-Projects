@@ -49,7 +49,7 @@ bool ResourceManager::loadFile(const string& filename) {
             continue; // Skip empty lines
         }
 
-        vector<string> parts = strhlp.splitLine(line, '|'); // Split the line into parts using '|' as the delimiter
+        vector<string> parts = hlp.splitLine(line, '|'); // Split the line into parts using '|' as the delimiter
 
         if (parts.size() != 4) { // Ensure that there are exactly 4 parts (ID, Name, Type, Status)
             cerr << "Warning: Line " << lineNumber << " in file " << filename << " has incorrect format." << endl;
@@ -103,14 +103,14 @@ vector<Resource> ResourceManager::search(const string& keyword) const {
     vector<Resource> results; // Vector to store search results
 
     // By converting both the keyword and resource parts to lowercase, search is made case-insensitive
-    string lowerKeyword = strhlp.toLower(keyword); // Copy of keyword, converted to lowercase
+    string lowerKeyword = hlp.toLower(keyword); // Copy of keyword, converted to lowercase
 
     for (const auto& resource : resources) { // Check if the keyword is a substring i.e. is the keyword present?
         // Using .find() is a form of Linear Search.
         // It checks each character in the string until it finds a match or reaches the end of the string.
-        if(strhlp.toLower(resource.getID()).find(lowerKeyword) != string::npos || // Checking ID
-           strhlp.toLower(resource.getName()).find(lowerKeyword) != string::npos || // Checking Name
-           strhlp.toLower(resource.getType()).find(lowerKeyword) != string::npos){ // Checking Type
+        if(hlp.toLower(resource.getID()).find(lowerKeyword) != string::npos || // Checking ID
+           hlp.toLower(resource.getName()).find(lowerKeyword) != string::npos || // Checking Name
+           hlp.toLower(resource.getType()).find(lowerKeyword) != string::npos){ // Checking Type
            // No need to check status, it only matters if it is "Available"
             results.push_back(resource);
         }
@@ -119,29 +119,28 @@ vector<Resource> ResourceManager::search(const string& keyword) const {
 }
 
 // --- SORT --- //
-// NOTE: Renamed original SortCriteria to be distictive of either Resources or Reservations so different enum classes can co-exist.
-void ResourceManager::sortResources(SortResourceCriteria criteria) { // TODO: Rename some of these "StringHelpers" if we change it!
+void ResourceManager::sortResources(SortCriteriaReso criteria) {
     switch (criteria) { // Switch case employing the use of the enum
-        case SortResourceCriteria::ID:
-            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
+        case SortCriteriaReso::ID:
+            hlp.mergeSort(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getID() < b.getID(); // Sort by ID
                       });
             break;
-        case SortResourceCriteria::NAME:
-            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
+        case SortCriteriaReso::NAME:
+            hlp.mergeSort(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getName() < b.getName(); // Sort by Name
                       });
             break;
-        case SortResourceCriteria::TYPE:
-            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
+        case SortCriteriaReso::TYPE:
+            hlp.mergeSort(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getType() < b.getType(); // Sort by Type
                       });
             break;
-        case SortResourceCriteria::STATUS:
-            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
+        case SortCriteriaReso::STATUS:
+            hlp.mergeSort(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getStatus() < b.getStatus(); // Sort by status (Availability)
                       });

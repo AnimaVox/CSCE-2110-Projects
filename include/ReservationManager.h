@@ -1,7 +1,7 @@
 /*
 This class handles "Reservation" objects and their operations.
 - Original Author: Erin Sen
-- Editor: D'Antae Leathers
+- Editors: D'Antae Leathers, Dean Foote
 */
 
 #ifndef RESERVATION_MANAGER_H
@@ -9,20 +9,28 @@ This class handles "Reservation" objects and their operations.
  
 #include "Reservation.h"
 #include "ResourceManager.h"
-#include "StringHelpers.h" // StringHelpers class for string manipulation
+#include "Helpers.h" // Helpers class for string manipulation and sorting
 #include "CancellationHistory.h"
 #include "WaitingList.h"
 #include <list>
 using namespace std;
  
+enum class SortCriteriaResv{ // Using an enum here for readibility when calling sort functions
+    ID,
+    STUDENTID,
+    STUDENTNAME,
+    RESOURCEID,
+    DATE
+};
+
 class ReservationManager {
     private:
         list<Reservation> reservations;
  
         // Helpers
         static void printHeader(); // Prints the header for reservation display
-        StringHelpers strhlp; // Instance of StringHelpers for string manipulation  
-        
+        Helpers hlp; // Instance of Helpers for string manipulation and sorting
+
     public:
         // --- CREATE ---
         // Validates the fields, then inserts the new reservation at the end of the linked list. Returns false if validation fails.
@@ -41,7 +49,10 @@ class ReservationManager {
         
         // --- SEARCH ---
 
-        
+        // --- SORT ---
+        // Sorts the reservations based on the specified criteria (ID, Date, StudentID, StudentName, or ResourceID) using an Insertion Sort algorithm
+        void sortReservations(SortCriteriaResv criteria); 
+
         // --- DISPLAY ---
         void DisplayReservations() const; // Displays all active reservations
 
