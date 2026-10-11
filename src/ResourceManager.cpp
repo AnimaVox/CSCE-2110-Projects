@@ -106,7 +106,7 @@ vector<Resource> ResourceManager::search(const string& keyword) const {
     string lowerKeyword = strhlp.toLower(keyword); // Copy of keyword, converted to lowercase
 
     for (const auto& resource : resources) { // Check if the keyword is a substring i.e. is the keyword present?
-        // Using .find() is a form of Linear Search. 
+        // Using .find() is a form of Linear Search.
         // It checks each character in the string until it finds a match or reaches the end of the string.
         if(strhlp.toLower(resource.getID()).find(lowerKeyword) != string::npos || // Checking ID
            strhlp.toLower(resource.getName()).find(lowerKeyword) != string::npos || // Checking Name
@@ -118,29 +118,30 @@ vector<Resource> ResourceManager::search(const string& keyword) const {
     return results; // Return the vector of matching resources
 }
 
-// --- SORT ---
-void ResourceManager::sortResources(SortCriteria criteria) {
+// --- SORT --- //
+// NOTE: Renamed original SortCriteria to be distictive of either Resources or Reservations so different enum classes can co-exist.
+void ResourceManager::sortResources(SortResourceCriteria criteria) { // TODO: Rename some of these "StringHelpers" if we change it!
     switch (criteria) { // Switch case employing the use of the enum
-        case SortCriteria::ID:
-            sort(resources.begin(), resources.end(),
+        case SortResourceCriteria::ID:
+            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getID() < b.getID(); // Sort by ID
                       });
             break;
-        case SortCriteria::NAME:
-            sort(resources.begin(), resources.end(),
+        case SortResourceCriteria::NAME:
+            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getName() < b.getName(); // Sort by Name
                       });
             break;
-        case SortCriteria::TYPE:
-            sort(resources.begin(), resources.end(),
+        case SortResourceCriteria::TYPE:
+            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getType() < b.getType(); // Sort by Type
                       });
             break;
-        case SortCriteria::STATUS:
-            sort(resources.begin(), resources.end(),
+        case SortResourceCriteria::STATUS:
+            StringHelpers::mergeSort<Resource>(resources, 0, resources.size() - 1,
                       [](const Resource& a, const Resource& b) {
                           return a.getStatus() < b.getStatus(); // Sort by status (Availability)
                       });
