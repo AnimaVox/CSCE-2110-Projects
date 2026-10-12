@@ -110,7 +110,7 @@ int main() {
                             resManager.displayAvailable();
                             break;
                         }
-                        case 3: { // Search Resources (by term) **** TO BE IMPLEMENTED ****
+                        case 3: { // Search Resources (by term)
                             cout << "Enter a search term (matches ID, name, or type): "; 
                             string keyword;
                             getline(cin, keyword);
@@ -146,7 +146,9 @@ int main() {
                                     cout << "Invalid choice.\n";
                                     continue;
                             }
-                                
+                            
+                            if (resManager.getResources().size() == 0) {break;} // If there are no resources to display skip printing the sorted list
+
                             cout << "\n-- Sorted Resources " << 
                             (sortChoice == 1 ? "(by ID)" :
                             (sortChoice == 2 ? "(by Name)" :
@@ -218,30 +220,36 @@ int main() {
                             break;
                         }
                         case 5: { // Undo Cancellation
-                            Reservation retrievedReservation = cancels.RestoreHistory();
-                            string restoreID = retrievedReservation.getID();
-                            string restoreStuID = retrievedReservation.getStudentID();
-                            string restoreStuName = retrievedReservation.getStudentName();
-                            string restoreResoID = retrievedReservation.getResourceID();
-                            string restoreDate = retrievedReservation.getDate();
-
-                            if(resvManager.createReservation(restoreID, restoreStuID, restoreStuName, restoreResoID, restoreDate, resManager, waitList)) {
-                                cancels.removeHistory();
-                            } else {
-                                for (const auto& res : resManager.getResources()) {
-                                    if (res.getID() == restoreResoID && !res.isAvailable()) {
-                                        cancels.removeHistory(); // Remove the reservation from history if the resource is unavailable
-                                        cout << "The reservation cannot be restored and has been removed from history." << endl;
-                                        break;
-                                    }
-                                }
-
-                                cancels.removeHistory(); // Remove the reservation from history if it cannot be restored
+                            if (cancels.isEmpty()) {
+                                cout << "The cancellation history is empty!\n";
+                                break;
+                            }
+                            
+                            bool restored = cancels.restoreMostRecent([&](const Reservation& r) {
+                                cout << "Trying to restore reservation for [" << r.getStudentID() << "] " << r.getStudentName() << " with Resource ID: " << r.getResourceID() << endl;
+                                string id = r.getID();
+                                return resvManager.createReservation(id, r.getStudentID(), r.getStudentName(),r.getResourceID(), r.getDate(), resManager, waitList, false, false);
+                            });
+                            
+                            if (!restored) {
+                                cout << "No cancelled reservation can currently be restored." << endl;
                             }
                             break;
                         }
-                        case 6: { // Search Reservations **** TO BE IMPLEMENTED ****
-                            cout << "This feature is not yet implemented... \n";
+                        case 6: { // Search Reservations
+                            cout << "Enter a search term (matches ID, student ID, student name, resource ID, or date): "; 
+                            string keyword;
+                            getline(cin, keyword);
+
+                            vector<Reservation> results = resvManager.search(keyword);
+                            if (results.empty()) {  // Term not found
+                                cout << "No matches found.\n";
+                            } else {
+                                cout << "\n-- Search Results (" << results.size() << ") --\n"; // Display all results that have the term
+                                for (const auto& r : results) {
+                                    r.display();
+                                }
+                            }
                             break;
                         }
                         case 7: { // Sort Reservations
@@ -336,12 +344,13 @@ int main() {
             }
 
             case 0: { // Exit message
-                cout << "Thank you for using the Campus Resource Reservation System. Goodbye!\n";   
+                cout << "Thank you for using the Campus Resource Reservation System. Goodbye!\n\n";   
                 break;
             }
             default:
                 cout << "Invalid option, try again.\n"; // If the user doesn't choose a proper option, error message and go again
         }
     }
+    
     return 0;
 }

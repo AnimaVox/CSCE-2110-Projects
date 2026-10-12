@@ -23,6 +23,14 @@ class Helpers {
         string toLower(const string& s) const; // Converts a string to lowercase
         // (The STL implementation of tolower() only works on single characters, so this is a helper to do it for the whole string)
 
+        // A helper to perform a more robust date validation. Used by ReservationManager::ValidateReservation()
+        string checkDate(const string& date) const;
+
+        // Returns true if 'substring' appears anywhere inside 'text', case-insensitive
+        // This is a manual implementation of substring search, which is a linear search algorithm. 
+        // It checks each character in the text until it finds a match or reaches the end of the text.
+        bool containsSubstring(const string& text, const string& substring) const;
+
         // The following two functions are manual template implementations of MergeSort and Merge, they can be used together to sort any *vector* of objects
         // Template merge implementation
         template<typename T, typename Compare> static void merge(vector<T>& vec, int left, int mid, int right, Compare compare) {
@@ -40,7 +48,6 @@ class Helpers {
             int i = 0, j = 0, k = left;
             // Because these aren't something simple like ints, we use the comparator here instead
             while (i < n1 && j < n2) { // Merge the temp vectors back
-                // We compare right to left because it would've taken the right object first on equality, which is unstable.
                 if (!compare(rightVec[j], leftVec[i])) { 
                     vec[k] = leftVec[i];
                     i++;

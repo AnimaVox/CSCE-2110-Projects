@@ -5,8 +5,7 @@
 #include "../include/ResourceManager.h"
 #include <iostream> // cin, cout
 #include <iomanip> // setw
-#include <algorithm> //transform, find
-#include <cctype> // tolower
+#include <algorithm> //any_of
 #include <fstream> // ifstream (used to read file)
 #include <sstream> // stringstream (used to easily convert digits into actual strings and split by delimiter)
 
@@ -22,7 +21,7 @@ void ResourceManager::printHeader() { // Makes an neat organized header. To be u
 }
 
 void ResourceManager::setStatus(const string& id,const string& status){ // Allows other classes that need to to set the status of resource, but by telling ResourceManager to do it since ResourceManager has direct access to the resource vector.
-    for(int i = 0; i < (int)resources.size(); i++){
+    for(int i = 0; i < static_cast<int>(resources.size()); i++){
         if(resources[i].getID() == id){
             resources[i].setStatus(status);
         }
@@ -33,7 +32,7 @@ void ResourceManager::setStatus(const string& id,const string& status){ // Allow
 bool ResourceManager::loadFile(const string& filename) {
     ifstream file(filename);
     if (!file.is_open()) {
-        cout << "Error: Could not open file " << filename << endl; // Using cerr for error messages. Writes immediately for debugging
+        cout << "Error: Could not open file " << filename << endl; // Error message for file failure
         return false; // If file cannot be opened, return false
     }
 
@@ -45,9 +44,8 @@ bool ResourceManager::loadFile(const string& filename) {
     while (getline(file, line)) {
         lineNumber++;
 
-        if (line.empty()) {
-            continue; // Skip empty lines
-        }
+        if (!line.empty() && line.back() == '\r') {line.pop_back();} // Remove carriage return if present
+        if (line.empty()) {continue;} // Skip empty lines
 
         vector<string> parts = hlp.splitLine(line, '|'); // Split the line into parts using '|' as the delimiter
 
@@ -80,38 +78,40 @@ void ResourceManager::displayAll() const { // Displays all loaded resources
 }
 
 void ResourceManager::displayAvailable() const { // Display only Available resources
-    bool foundAvailable = false;
-    int count = 0;
+    if (resources.empty()) {
+        cout << "No resources to display." << endl; // If there are no loaded resources, print this.
+        return;
+    }
+    
+    // Check if there are any available resources
+    bool anyAvailable = any_of(resources.begin(), resources.end(), [](const Resource& res) { return res.isAvailable(); });
 
+    if (!anyAvailable) { // If there are no Available resources, print this.
+        cout << "No available resources found." << endl;
+        return;
+    }
+
+    int count = 0;
     printHeader();
     for (const auto& resource : resources) {
         if (resource.isAvailable()) {
             resource.display();
-            foundAvailable = true;
             count++;
         }
     }
     cout << endl << "There are currently " << count << " available resources..." << endl;
-
-    if (!foundAvailable) { // If there are no Available resources, print this.
-        cout << "No available resources found." << endl;
-    }
 }
 
 // --- SEARCH ---
 vector<Resource> ResourceManager::search(const string& keyword) const {
     vector<Resource> results; // Vector to store search results
 
-    // By converting both the keyword and resource parts to lowercase, search is made case-insensitive
-    string lowerKeyword = hlp.toLower(keyword); // Copy of keyword, converted to lowercase
-
     for (const auto& resource : resources) { // Check if the keyword is a substring i.e. is the keyword present?
-        // Using .find() is a form of Linear Search.
-        // It checks each character in the string until it finds a match or reaches the end of the string.
-        if(hlp.toLower(resource.getID()).find(lowerKeyword) != string::npos || // Checking ID
-           hlp.toLower(resource.getName()).find(lowerKeyword) != string::npos || // Checking Name
-           hlp.toLower(resource.getType()).find(lowerKeyword) != string::npos){ // Checking Type
-           // No need to check status, it only matters if it is "Available"
+        // It checks each character in the string until it finds a match or reaches the end of the string i.e Linear Search
+        if(hlp.containsSubstring(resource.getID(), keyword) || // Checking ID
+           hlp.containsSubstring(resource.getName(), keyword) || // Checking Name
+           hlp.containsSubstring(resource.getType(), keyword)){ // Checking Type
+           // No need to check status
             results.push_back(resource);
         }
     }
@@ -120,6 +120,11 @@ vector<Resource> ResourceManager::search(const string& keyword) const {
 
 // --- SORT --- //
 void ResourceManager::sortResources(SortCriteriaReso criteria) {
+    if (resources.empty()) {
+        cout << "No resources to sort." << endl; // If there are no loaded resources, print this.
+        return;
+    }
+    
     switch (criteria) { // Switch case employing the use of the enum
         case SortCriteriaReso::ID:
             hlp.mergeSort(resources, 0, resources.size() - 1,

@@ -14,17 +14,17 @@
 // -- HELPERS ---
 void ReservationManager::printHeader() {
     cout << left
-         << setw(8) << "ID"
-         << setw(12) << "StudentID"
-         << setw(20) << "StudentName"
-         << setw(12) << "ResourceID"
-         << setw(15) << "Date"
-         << endl;
-        cout << string(65, '-') << endl; // Line of dashes for separation
+        << setw(8) << "ID"
+        << setw(12) << "StudentID"
+        << setw(20) << "StudentName"
+        << setw(12) << "ResourceID"
+        << setw(15) << "Date"
+        << endl;
+    cout << string(65, '-') << endl; // Line of dashes for separation
 }
 
 // --- CREATE ---
-bool ReservationManager::createReservation(string& id, const string& stuID, const string& stuName, const string& resoID, const string& date, ResourceManager& rm, WaitingList& wl, bool bypass) {
+bool ReservationManager::createReservation(string& id, const string& stuID, const string& stuName, const string& resoID, const string& date, ResourceManager& rm, WaitingList& wl, bool bypass, bool queueOnConflict) {
     for (auto& resource : rm.getResources()) {
         if (resource.getID() == resoID) { // Check if the resource exists in the ResourceManager
             // Resource exists, proceed
@@ -64,8 +64,7 @@ bool ReservationManager::createReservation(string& id, const string& stuID, cons
 
             // Bypss validation if told to by the call (used in loadFile).
             if(!bypass){
-                if (!ValidateReservation(newReservation, rm, wl)) {
-                    //cout << "Reservation validation failed." << endl;
+                if (!ValidateReservation(newReservation, rm, wl, queueOnConflict)) {
                     return false; // Validation failed
                 }
             }
@@ -99,9 +98,8 @@ bool ReservationManager::loadFile(const string& filename, ResourceManager& rm, W
     while (getline(file, line)) {
         lineNumber++;
 
-        if (line.empty()) {
-            continue; // Skip empty lines
-        }
+        if (!line.empty() && line.back() == '\r') {line.pop_back();} // Remove carriage return if present
+        if (line.empty()) {continue;} // Skip empty lines
 
         vector<string> parts = hlp.splitLine(line, '|'); // Split the line into parts using '|' as the delimiter
 
@@ -118,7 +116,7 @@ bool ReservationManager::loadFile(const string& filename, ResourceManager& rm, W
         string date = parts[4];
 
         // Bypass validation for pre-existing file records.
-        createReservation(id, stuID, stuName, resoID, date, rm, wl, true); // Create a new reservation with the parsed data
+        createReservation(id, stuID, stuName, resoID, date, rm, wl, true, false); // Create a new reservation with the parsed data
     }
 
     file.close();
@@ -142,23 +140,20 @@ bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm
                 }
             }
             
-            for (auto& resource : rm.getResources()){ // If someone else was waiting for the resource, make their reservation now.
-                if(resource.getID() == resourceToFree){
-                    if (!reservedByAnother){
-                        Student nextInLine;
-                        string nextDate = "";
-                        // nextInLine will be set to the next student in line for the resource, and nextDate will be set to the date they requested through checkWaiting().
-                        if (wl.checkWaiting(resourceToFree, nextInLine, nextDate)) { 
-                            string newID = ""; // let createReservation auto-generate it
-                            cout << "Resource ID " << resourceToFree << " is now open for "<< dateToFree 
-                            << ". Making reservation for [" << nextInLine.getID() << "] " << nextInLine.getName() << " on " << nextDate << endl;
-                            createReservation(newID, nextInLine.getID(), nextInLine.getName(), resourceToFree, nextDate, rm, wl);
-                        }
-                    }                   
+            cout << "Reservation with ID " << id << " has been cancelled." << endl;    
+        
+            if (!reservedByAnother) {  // If someone else was waiting for the resource, make their reservation now.
+                Student next;
+                if (wl.peekWaiting(resourceToFree, dateToFree, next)) {
+                    string newID = "";
+                    cout << "Resource ID " << resourceToFree << " is now open for " << dateToFree
+                    << ". Making reservation for [" << next.getID() << "] " << next.getName() << endl;
+                            
+                    if (createReservation(newID, next.getID(), next.getName(), resourceToFree, dateToFree, rm, wl)) {
+                        wl.removeWaiting(resourceToFree, dateToFree, next.getID()); // Only dequeue on success
+                    }
                 }
-            }
-
-            cout << "Reservation with ID " << id << " has been cancelled." << endl;
+            }                   
             return true; // Successfully cancelled the reservation
         }
     }    
@@ -167,7 +162,7 @@ bool ReservationManager::cancelReservation(const string& id, ResourceManager& rm
 }
 
 // --- VALIDATE---
-bool ReservationManager::ValidateReservation(const Reservation& resv, ResourceManager& rm, WaitingList& wl) const {
+bool ReservationManager::ValidateReservation(const Reservation& resv, ResourceManager& rm, WaitingList& wl, bool queueOnConflict) const {
     const string& studentID = resv.getStudentID();
     const string& studentName = resv.getStudentName();
     const string& resourceID = resv.getResourceID();
@@ -180,22 +175,17 @@ bool ReservationManager::ValidateReservation(const Reservation& resv, ResourceMa
 
         // Check that the student ID is numeric
         for (char c : studentID) {
-            if (!isdigit(c)) {
+            if (c < '0' || c > '9') { //Each character must be a digit 0 - 9 .(Within the bounds of ASCII values 48 - 57)
                 cout << "Error: Student ID is not numeric." << endl;
                 return false;
             }
         }
 
-        // Check that the date is in the correct format e.g., 09/23/2026 (MM/DD/YYYY)
-        if (date.length() != 10 || date[2] != '/' || date[5] != '/') {
-            cout << "Error: Date must be in the format MM/DD/YYYY." << endl;
-            return false;
-        } else if (date[0] > '1' || (date[0] == '1' && date[1] > '2') || (date[0] == '0' && date[1] == '0')) {
-            cout << "Error: Invalid month." << endl;
-            return false;
-        } else if (date[3] > '3' || (date[3] == '3' && date[4] != '0' && date[4] != '1')) { // Does not account for months with fewer than 30 days.
-            cout << "Error: Invalid day." << endl;
-            return false;
+        // Check that the date is valid
+        string dateError = hlp.checkDate(date);
+        if (!dateError.empty()) { // checkDate() returns an empty string if the date is valid.
+            cout << "Error: " << dateError << endl;
+            return false; 
         }
     }
     else{
@@ -213,48 +203,78 @@ bool ReservationManager::ValidateReservation(const Reservation& resv, ResourceMa
         }
     }
 
-    // Check that the resource ID isn't already reserved for the given date
     for (const auto& res : reservations) {
-        // If the resource is already reserved, add the student to the waiting-list for that resource
         if (res.getResourceID() == resourceID && res.getDate() == date) {
             cout << "Resource already has an active reservation for the given date." << endl;
-            cout << "Adding [" << studentID << "] " << studentName << " to the queue for Resource: " << resourceID << endl;
-            wl.AddStudent(Student(studentID, studentName), resourceID, date);
+
+            if (res.getStudentID() == studentID) { // They already hold it, so don't queue them behind themselves
+                cout << "[" << studentID << "] " << studentName << " already holds this reservation." << endl;
+                return false;
+            }
+
+            if (queueOnConflict) {
+                if (wl.AddStudent(Student(studentID, studentName), resourceID, date)) {
+                    cout << "Adding [" << studentID << "] " << studentName << " to the queue for Resource: " << resourceID << endl;
+                } else {
+                    cout << "[" << studentID << "] " << studentName << " is already in that queue." << endl;
+                }
+            }
             return false;
         }
     }
- 
     return true; // All validations passed
 }
 
 // --- SEARCH ---
+vector<Reservation> ReservationManager::search(const string& keyword) const {
+    vector<Reservation> results; // Vector to store search results
+
+    for (const auto& reservation : reservations) { // Check if the keyword is a substring i.e. is the keyword present?
+        // It checks each character in the string until it finds a match or reaches the end of the string i.e Linear Search
+        if(hlp.containsSubstring(reservation.getID(), keyword) || // Checking ID
+           hlp.containsSubstring(reservation.getStudentID(), keyword) || // Checking Student ID
+           hlp.containsSubstring(reservation.getStudentName(), keyword) || // Checking Student Name
+           hlp.containsSubstring(reservation.getResourceID(), keyword) || // Checking Resource ID
+           hlp.containsSubstring(reservation.getDate(), keyword)){ // Checking Date
+
+            results.push_back(reservation);
+        }
+    }
+    return results; // Return the vector of matching reservations
+}
 
 // --- SORT ---
 void ReservationManager::sortReservations(SortCriteriaResv criteria) {
     switch (criteria) { // Switch case employing the use of the enum
         case SortCriteriaResv::ID:
             hlp.insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
-                          return a.getID() < b.getID(); // Sort by ID
+                          return a.getID() < b.getID(); // Sort by reservation ID
                       });
             break;
         case SortCriteriaResv::STUDENTID:
             hlp.insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
-                          return a.getStudentID() < b.getStudentID(); // Sort by Type
+                          return a.getStudentID() < b.getStudentID(); // Sort by student ID
                       });
             break;
         case SortCriteriaResv::STUDENTNAME:
             hlp.insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
-                          return a.getStudentName() < b.getStudentName(); // Sort by status (Availability)
+                          return a.getStudentName() < b.getStudentName(); // Sort by student name
                       });
             break;
         case SortCriteriaResv::RESOURCEID:
             hlp.insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
-                          return a.getResourceID() < b.getResourceID(); // Sort by status (Availability)
+                          return a.getResourceID() < b.getResourceID(); // Sort by resource ID
                       });
             break;
         case SortCriteriaResv::DATE:
             hlp.insertionSort(reservations, [](const Reservation& a, const Reservation& b) {
-                          return a.getDate() < b.getDate(); // Sort by Name
+                    // Rearranging MM/DD/YYYY into YYYY/MM/DD for string comparison to order by year first
+                    // Here in the U.S. MM/DD/YYYY is standard so it is what is used, but it is bad for sorting situations like this
+                    string da = a.getDate();
+                    string db = b.getDate();
+                    string keyA = da.substr(6, 4) + da.substr(0, 2) + da.substr(3, 2);
+                    string keyB = db.substr(6, 4) + db.substr(0, 2) + db.substr(3, 2);
+                          return keyA < keyB; // Sort by date
                       });
             break;
     }
@@ -283,13 +303,13 @@ void ReservationManager::reportResourceUse(const vector<Resource>& resources) co
     
     // Print header
     cout << left
-        << setw(20) << "Resource"
+        << setw(25) << "Resource"
         << "# of Reservations"
         << endl;
     cout << string(40, '-') << endl; // Line of dashes for separation
 
     // For every resource, check how many reservations are present for it.
-    for(int i = 0; i < (int)resources.size(); i++){
+    for(int i = 0; i < static_cast<int>(resources.size()); i++){
         int count = 0;
 
         for(const Reservation& res: reservations){
@@ -328,7 +348,7 @@ void ReservationManager::reportMostWanted(const vector<Resource>& resources, con
     cout << string(55, '-') << endl; // Line of dashes for separation
 
     // For every resource get their counts of active reservations and waiting-list reservations
-    for(int i = 0; i < (int)resources.size(); i++){
+    for(int i = 0; i < static_cast<int>(resources.size()); i++){
 
         // Active reservations count
         int activeCount = 0;
@@ -395,9 +415,7 @@ void ReservationManager::reportMostWanted(const vector<Resource>& resources, con
         << endl;
     }
 
-    if(!rankings.empty()){
-    cout << endl << "There are " << (n - slots == 0 ? "no other requests..." : to_string(n - slots) + " other requests...") << endl;
-    }
+    cout << endl << "There are " << (n - slots == 0 ? "no other resources..." : to_string(n - slots) + " other resources...") << endl;
 }
  
 // --- GETTER ---

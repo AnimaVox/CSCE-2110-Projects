@@ -34,9 +34,10 @@ class ReservationManager {
     public:
         // --- CREATE ---
         // Validates the fields, then inserts the new reservation at the end of the linked list. Returns false if validation fails.
-        bool createReservation(string& id, const string& studentID, const string& studentName, const string& resourceID, const string& date, ResourceManager& rm, WaitingList& wl, bool bypass = false);
-        
-        // Read reservations from a file. Returns false if the file cannot be opened or if any line has an incorrect format.
+        // If bypass is true, it will skip validation and add the reservation directly. This is used when loading from a file.
+        // If queueOnConflict is true, it will add the student to the waiting list if the resource is already reserved for the given date.
+        bool createReservation(string& id, const string& studentID, const string& studentName, const string& resourceID, const string& date, ResourceManager& rm, WaitingList& wl, bool bypass = false, bool queueOnConflict = true); 
+        // Read reservations from a file. Returns false if the file cannot be opened.
         bool loadFile(const string& filename, ResourceManager& rm, WaitingList& wl);
  
         // --- CANCEL ---
@@ -44,10 +45,13 @@ class ReservationManager {
         bool cancelReservation(const string& id, ResourceManager& rm, CancellationHistory& ch, WaitingList& wl);
         
         // --- VALIDATE ---
-        // Checks that fields are non-empty and supplied with valid values e.g. date is MM/DD/YYY, ID is numeric. Also checks if resource is available for the given date of the reservation, if not adds the reservation to the waiting list.
-        bool ValidateReservation(const Reservation& res, ResourceManager& rm, WaitingList& wl) const;
+        // Checks that fields are non-empty and supplied with valid values e.g. date is MM/DD/YYYY, checks StudentID is numeric. 
+        // Also checks if resource is available for the given date of the reservation. 
+        // If there is a date conflict, adds the reservation to the waiting list.
+        bool ValidateReservation(const Reservation& res, ResourceManager& rm, WaitingList& wl, bool queueOnConflict = true) const;
         
         // --- SEARCH ---
+        vector<Reservation> search(const string& keyword) const; // Sub-string search for reservations, case-insensitive
 
         // --- SORT ---
         // Sorts the reservations based on the specified criteria (ID, Date, StudentID, StudentName, or ResourceID) using an Insertion Sort algorithm

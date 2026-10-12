@@ -27,11 +27,15 @@ struct RequestCount{ // Struct for bundling resource IDs to a count. Used in get
 
 class WaitingList {
 public:
-    void AddStudent(const Student& student, const string& resoID, const string& date); // Takes student object to add to queue
+    // Takes student object to add to queue,
+    // returns false if the student is already in the queue for that resource and date, true otherwise
+    bool AddStudent(const Student& student, const string& resoID, const string& date); 
 
     void DisplayWaiting() const; // This should create a copy of the original queue so we don't accidentally destroy the actual queue displaying the data
 
-    bool checkWaiting(const string& resoID, Student& result, string& date); // Checks all elements of the elements for a specific resource ID and returns true if any Student us currently waiting on it, false otherwise
+    bool peekWaiting(const string& resoID, const string& date, Student& result) const;
+    
+    void removeWaiting(const string& resoID, const string& date, const string& studentID);
 
     void reportWaiting(); // Reports the number of students waiting for each resources that has student(s) waiting on them.
 

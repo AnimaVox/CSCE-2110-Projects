@@ -16,34 +16,12 @@ void CancellationHistory::printHeader() {
         cout << string(65, '-') << endl; // Line of dashes for separation
 }
 
+bool CancellationHistory::isEmpty() const {
+    return history.empty();
+}
+
 void CancellationHistory::AddHistory(const Reservation& cancelled) {
     history.push(cancelled);
-}
-
-Reservation CancellationHistory::RestoreHistory() {
-    
-    Reservation restore; // Used to store and return the reservation being restored before removing it from the history
-
-    if (history.empty()) { // Check if the history even has anything to begin with
-        cout << "The cancellation history is empty!" << endl;
-        Reservation empty;
-        return empty;
-    }
-
-    restore = history.top(); // Gives the reservation to restore
-
-    string stuID = restore.getStudentID();
-    string stuName = restore.getStudentName();
-    string resoID = restore.getResourceID();
-
-    cout << "Trying to restore reservation for [" << stuID << "] " << stuName << " with Resource ID: " << resoID << endl;
-    return restore;
-}
-
-void CancellationHistory::removeHistory() {
-    if (!history.empty()) {
-        history.pop();
-    }
 }
 
 void CancellationHistory::DisplayHistory() const {
@@ -67,5 +45,5 @@ void CancellationHistory::DisplayHistory() const {
         }
         copyStack.pop();
     }
-    cout << endl << "The most recent cancellation will be restored first." << endl;
+    cout << endl << "The most recent cancellation will be restored if possible." << endl;
 }

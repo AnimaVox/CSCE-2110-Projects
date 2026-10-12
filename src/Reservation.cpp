@@ -58,10 +58,10 @@ void Reservation::setDate(const string& newDate) {
 // Helpers
 void Reservation::display() const { // Display the reservation information in one formatted line.
     cout << left
-         << setw(10) << id
-         << setw(10) << studentID
+         << setw(8) << id
+         << setw(12) << studentID
          << setw(20) << studentName
          << setw(12) << resourceID
-         << setw(12) << date
+         << setw(15) << date
          << endl;
 }
